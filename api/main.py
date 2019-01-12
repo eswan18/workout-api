@@ -41,18 +41,27 @@ class Workout(Resource):
     '''An instance of any kind of workout.'''
 
     @prepare_for_json
-    def get(self, workout_id):
-        # Convert the workout_id to an ObjectId and query mongo for it.
-        object_id = ObjectId(workout_id)
-        workouts = db.workouts.find({'_id': object_id})
-        # Check that the ID returned a result.
-        if workouts.count() < 1:
-            raise ValueError('No such ID in workouts database')
-        # Assume that only one result was returned, so we can take the first
-        # element retrned by the cursor
-        response = workouts.next()
-        workouts.close()
-        return response
+    #def get(self, workout_id):
+    def get(self, **kwargs):
+        workout_id = kwargs.get('workout_id')
+        # If a workout_id was passed, convert the workout_id to an ObjectId and
+        # query mongo for it.
+        if workout_id is not None:
+            object_id = ObjectId(workout_id)
+            workouts = db.workouts.find({'_id': object_id})
+            # Check that the ID returned a result.
+            if workouts.count() < 1:
+                raise ValueError('No such ID in workouts database')
+            # Assume that only one result was returned, so we can take the first
+            # element retrned by the cursor
+            response = workouts.next()
+            workouts.close()
+            return response
+        # If no workout_id was passed, return all workouts.
+        else:
+            workouts = db.workouts.find()
+            response = list(workouts)
+            return response
 
     def delete(self, workout_id):
         raise NotImplementedError
@@ -73,7 +82,7 @@ class User(Resource):
         return NotImplementedError
 
 
-api.add_resource(Workout, '/workout/<string:workout_id>')
+api.add_resource(Workout, '/workout/', '/workout/<string:workout_id>')
 api.add_resource(User, '/user/<string:user_id>')
 
 if __name__ == '__main__':
