@@ -7,11 +7,12 @@ import data.data as data
 
 API_URL = 'http://localhost:5000'
 
-#json_header = {'content-type': 'application/json'}
+workout_url = API_URL + '/workout/'
+user_url = API_URL + '/user/'
 
 def test_get_workout():
     object_id = '5c395e6dc62a663afe045e00'
-    response = requests.get(API_URL + '/workout/' + object_id)
+    response = requests.get(workout_url + object_id)
     data = response.json()
     resource = data['resource']
     assert resource['distance'] == 3.69
@@ -19,7 +20,10 @@ def test_get_workout():
 def test_get_all_workouts():
     pass
 
-#def test_insert_run():
-#    requests.post('http://localhost:5000/api/workouts',
-#                  data=json.dumps(data.indoor_run_doc),
-#                  headers=json_header)
+def test_get_user():
+    object_id = '5c3c03c7c62a6647e3204792'
+    response = requests.get(user_url + object_id)
+    data = response.json()
+    resource = data['resource']
+    assert resource['first_name'] == 'Ethan'
+    assert resource['last_name'] == 'Swan'
