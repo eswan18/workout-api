@@ -1,4 +1,5 @@
-import os, functools
+import os, functools, copy
+from numbers import Number
 from flask import Flask
 from flask_restful import Resource, Api, fields, marshal_with
 from pymongo import MongoClient
@@ -14,34 +15,44 @@ if 'WORKOUT_APP_PROD' in os.environ:
 else:
     db_name = 'workout_app_dev'
 
-#client = None
-
-# Define a wrapper we'll need for our class methods.
-def prepare_for_json(f):
-    '''Make a returned list or dict safe to jsonify.'''
-    unsafe_keys = ['_id', 'time']
-    @functools.wraps(f)
-    def make_dict_safe(d):
-        for key in unsafe_keys:
-            if key in d.keys():
-                d[key] = str(d[key])
-        return d
-    def wrapper(*args, **kwargs):
-        result = f(*args, **kwargs)
-        # Assume the result is a dict, but if that fails, assume it's a list.
+class SafeDocuments(fields.Raw):
+    '''JSON-safe Mongo document or documents.'''
+    def format(self, value):
+        # See if the object is easily coerced to JSON.
         try:
-            result = make_dict_safe(result)
-        except AttributeError:
-            result = list(map(make_dict_safe, result))
-        return result
-    return wrapper
+            j = json.loads(value)
+        except:
+            # We probably shouldn't alter the original value, which is likely
+            # mutable.
+            value = copy.deepcopy(value)
+            # Define a recursive function for making dicts and lists safe.
+            def make_safe(x):
+                '''Make a list or dictionary JSON-safe.'''
+                # If it isn't an iterable, make sure it's a string or a number.
+                if not isinstance(x, list) and not isinstance(x, dict):
+                    if isinstance(x, Number):
+                        return x
+                    else:
+                        return str(x)
+                # If it's a dictionary, make each value safe.
+                if isinstance(x, dict):
+                    for key in x.keys():
+                       x[key] = make_safe(x[key]) 
+                    return x
+                # If it's a list, make each element safe.
+                if isinstance(x, list):
+                    return [make_safe(e) for e in x]
+            value = make_safe(value)
+        return value
 
+response_fields = {
+        'resource': SafeDocuments 
+}
 
 class Workout(Resource):
-    '''An instance of any kind of workout.'''
+    '''Any kind of workout.'''
 
-    @prepare_for_json
-    #def get(self, workout_id):
+    @marshal_with(response_fields)
     def get(self, **kwargs):
         workout_id = kwargs.get('workout_id')
         # If a workout_id was passed, convert the workout_id to an ObjectId and
@@ -56,32 +67,40 @@ class Workout(Resource):
             # element retrned by the cursor
             response = workouts.next()
             workouts.close()
-            return response
+            return {'resource': response}
         # If no workout_id was passed, return all workouts.
         else:
             workouts = db.workouts.find()
             response = list(workouts)
-            return response
+            return {'resource': response}
 
+    @marshal_with(response_fields)
     def delete(self, workout_id):
         raise NotImplementedError
+    @marshal_with(response_fields)
     def put(self, workout_id):
         return NotImplementedError
+    @marshal_with(response_fields)
     def post(self):
         return NotImplementedError
 
 class User(Resource):
     '''A user of the app.'''
+    @marshal_with(response_fields)
     def get(self, user_id):
         return NotImplementedError
+    @marshal_with(response_fields)
     def delete(self, user_id):
         return NotImplementedError
+    @marshal_with(response_fields)
     def put(self, user_id):
         return NotImplementedError
+    @marshal_with(response_fields)
     def post(self):
         return NotImplementedError
 
 
+# Add the workout and user resource models to the API.
 api.add_resource(Workout, '/workout/', '/workout/<string:workout_id>')
 api.add_resource(User, '/user/<string:user_id>')
 
