@@ -20,6 +20,6 @@ if __name__ == '__main__':
     # Add the workout and user resource models to the API.
     api.add_resource(Workout, '/workout/', '/workout/<string:workout_id>',
             resource_class_kwargs={'db': db})
-    api.add_resource(User, '/user/<string:user_id>',
+    api.add_resource(User, '/user/', '/user/<string:user_id>',
             resource_class_kwargs={'db': db})
     app.run()
