@@ -23,7 +23,7 @@ class Workout(Resource):
             workouts = self.db.workouts.find({'_id': object_id})
             # Check that the ID returned a result.
             if workouts.count() < 1:
-                raise ValueError('No such ID in database')
+                return {'message': 'No such workout_id'}, 400
             # Assume that only one result was returned, so we can take the first
             # element returned by the cursor.
             response = workouts.next()
@@ -37,8 +37,14 @@ class Workout(Resource):
 
 
     def delete(self, workout_id):
-        raise NotImplementedError
-        # return a 204 code
+        # Unlike in GET requests, the request *must* specify an ID.
+        workout_id = ObjectId(workout_id)
+        # Delete it from the collection.
+        result = self.db.workouts.delete_one({'_id': workout_id})
+        if result.deleted_count == 1:
+            return {}, 204
+        else:
+            return {'message': 'No such workout_id'}, 400
 
     def put(self, workout_id):
         raise NotImplementedError
