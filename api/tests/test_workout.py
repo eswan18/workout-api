@@ -16,7 +16,6 @@ def reset_collection():
     '''Hacky (?) way to reset mongo between tests.'''
     db.workouts.delete_many({})
     db.workouts.insert_many(workouts_collection)
-    return None
 
 def test_get_workout():
     object_id = '5c40771ac62a666a02ab1910'
@@ -32,7 +31,7 @@ def test_get_all_workouts():
     data = response.json()
     resource = data['resource']
     assert isinstance(resource, list)
-    assert len(resource) > 0
+    assert len(resource) == 8
     assert all([x.get('title') is not None for x in resource])
     assert response.status_code == 200
 
