@@ -1,10 +1,22 @@
 import pytest
 import requests
+import pymongo
 
-# Import the testing data.
-import data.data as data
+# Import the testing data that will populate the mongo collection.
+from data.data import workouts as workouts_collection
 
 API_URL = 'http://localhost:5000/workout/'
+MONGO_URL = 'rpi3-1'
+MONGO_DB = 'workout_app_dev'
+
+db = pymongo.MongoClient(MONGO_URL)[MONGO_DB]
+
+@pytest.fixture(autouse=True)
+def reset_collection():
+    '''Hacky (?) way to reset mongo between tests.'''
+    db.workouts.delete_many({})
+    db.workouts.insert_many(workouts_collection)
+    return None
 
 def test_get_workout():
     object_id = '5c40771ac62a666a02ab1910'
@@ -32,7 +44,7 @@ def test_delete_workout():
     assert response.status_code == 204
     # Try to retrieve the id again with GET.
     response = requests.get(API_URL + first_workout_id)
-    assert response.status_code == 400
+    assert response.status_code == 404
 
 def test_post_workout():
     '''Post a new workout and then GET it using the returned ID.'''
