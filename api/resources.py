@@ -89,6 +89,6 @@ class User(Resource):
     def post(self):
         new_user = request.get_json()
         # Blindly assume the resource is valid.
-        new_user_id = self.db.workouts.insert_one(new_user).inserted_id
+        new_user_id = self.db.users.insert_one(new_user).inserted_id
         return {'_id': str(new_user_id)}, 201
 
