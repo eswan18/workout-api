@@ -26,6 +26,20 @@ def test_get_all_workouts():
     assert len(resource) > 0
     assert all([x.get('title') is not None for x in resource])
 
+def test_post_workout():
+    '''Post a new workout and then GET it using the returned ID.'''
+    wkt1 = {'title': 'Lift Push', 'sets':
+                [{'exercise': 'Bench Press', 'weight': 135, 'reps': 10}],
+            'time': '2019-05-03 10:00:00'}
+    response1 = requests.post(workout_url, json=wkt1)
+    _id = response1.json()['_id']
+    response2 = requests.get(workout_url + _id)
+    wkt2 = response2.json()['resource']
+    # Make sure the received resource is the same as the posted one.
+    # (This dict equality test feels like it shouldn't work right but it does.)
+    del wkt2['_id']
+    assert wkt1 == wkt2
+
 def test_get_user():
     object_id = '5c3c03c7c62a6647e3204792'
     response = requests.get(user_url + object_id)
@@ -41,4 +55,3 @@ def test_get_all_users():
     assert isinstance(resource, list)
     assert len(resource) > 0
     assert all([x.get('first_name') is not None for x in resource])
-
