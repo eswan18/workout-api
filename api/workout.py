@@ -23,7 +23,7 @@ class Workout(Resource):
             workouts = self.db.workouts.find({'_id': object_id})
             # Check that the ID returned a result.
             if workouts.count() < 1:
-                return {'message': 'No such workout_id'}, 400
+                return {'message': 'No such workout_id'}, 404
             # Assume that only one result was returned, so we can take the first
             # element returned by the cursor.
             response = workouts.next()
