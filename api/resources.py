@@ -87,6 +87,8 @@ class User(Resource):
         # return a 204 code
 
     def post(self):
-        raise NotImplementedError
-        # return a 201 code
+        new_user = request.get_json()
+        # Blindly assume the resource is valid.
+        new_user_id = self.db.users.insert_one(new_user).inserted_id
+        return {'_id': str(new_user_id)}, 201
 
