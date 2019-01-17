@@ -1,4 +1,5 @@
-from flask_restful import Resource, marshal_with
+from flask import request
+from flask_restful import Resource, marshal_with, abort
 # Necessary for querying documents by their ID in mongo.
 from bson import ObjectId
 from safe_document import SafeDocument
@@ -27,22 +28,27 @@ class Workout(Resource):
             # element returned by the cursor.
             response = workouts.next()
             workouts.close()
-            return {'resource': response}
+            return {'resource': response}, 200
         # If no workout_id was passed, return all workouts.
         else:
             workouts = self.db.workouts.find()
             response = list(workouts)
-            return {'resource': response}
+            return {'resource': response}, 200
 
-    @marshal_with(response_fields)
+
     def delete(self, workout_id):
         raise NotImplementedError
-    @marshal_with(response_fields)
+        # return a 204 code
+
     def put(self, workout_id):
-        return NotImplementedError
-    @marshal_with(response_fields)
+        raise NotImplementedError
+        # return a 204 code
+
     def post(self):
-        return NotImplementedError
+        workout = request.get_json()
+        # Blindly assume the resource is valid.
+        workout_id = self.db.workouts.insert_one(workout).inserted_id
+        return {'_id': str(workout_id)}, 201
 
 class User(Resource):
     '''A user of the app.'''
@@ -72,13 +78,15 @@ class User(Resource):
             return {'resource': response}
 
 
-    @marshal_with(response_fields)
     def delete(self, user_id):
-        return NotImplementedError
-    @marshal_with(response_fields)
+        raise NotImplementedError
+        # return a 204 code
+        
     def put(self, user_id):
-        return NotImplementedError
-    @marshal_with(response_fields)
+        raise NotImplementedError
+        # return a 204 code
+
     def post(self):
-        return NotImplementedError
+        raise NotImplementedError
+        # return a 201 code
 
