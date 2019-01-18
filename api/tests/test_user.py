@@ -43,6 +43,19 @@ def test_delete_user():
     response = requests.get(API_URL + first_user_id)
     assert response.status_code == 404
 
+def test_put_user():
+    '''Update an existing user.'''
+    user_id = '5c3c03c7c6666647e3204792'
+    user = {'birthdate': '1981-01-12', 'first_name': 'Nathan',
+            'last_name': 'Naws'}
+    response = requests.put(API_URL + user_id, json=user)
+    assert response.status_code == 204
+    # Make sure that the record really was updated.
+    response = requests.get(API_URL + user_id)
+    resource = response.json()['resource']
+    del resource['_id']
+    assert resource == user
+
 def test_post_user():
     '''Post a new user and then GET it using the returned ID.'''
     user1 = {'first_name': 'Artemis', 'last_name': 'Fowl',
