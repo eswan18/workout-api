@@ -49,8 +49,23 @@ class User(Resource):
             return {'message': 'No such user_id'}, 400
         
     def put(self, user_id):
-        raise NotImplementedError
-        # return a 204 code
+        '''Update a user.'''
+        user = request.get_json()
+        user_id = ObjectId(user_id)
+        # Validate the request data.
+        if not set(user.keys()).issuperset(request_fields):
+            return {'message': 'Missing required field in passed data'}, 400
+        # Check that there is a current version of this user to delete.
+        result = self.db.users.delete_one({'_id': user_id})
+        if result.deleted_count != 1:
+            return {'message': 'No such user_id'}, 400
+        # With a successful deletion, add the new version of the user.
+        user['_id'] = user_id
+        result = self.db.users.insert_one(user)
+        # It's important that we inserted the new user under the same ID as
+        # as the old one.
+        assert user_id == result.inserted_id
+        return {'_id': str(user_id)}, 204
 
     def post(self):
         new_user = request.get_json()
