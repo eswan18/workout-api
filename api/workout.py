@@ -7,6 +7,8 @@ from safe_document import SafeDocument
 response_fields = {
         'resource': SafeDocument 
 }
+# Mandatory fields in any workout.
+request_fields = ['title', 'time']
 
 class Workout(Resource):
     '''Any kind of workout.'''
@@ -52,6 +54,9 @@ class Workout(Resource):
 
     def post(self):
         workout = request.get_json()
-        # Blindly assume the resource is valid.
-        workout_id = self.db.workouts.insert_one(workout).inserted_id
-        return {'_id': str(workout_id)}, 201
+        # Validate the request data.
+        if set(workout.keys()).issuperset(request_fields):
+            workout_id = self.db.workouts.insert_one(workout).inserted_id
+            return {'_id': str(workout_id)}, 201
+        else:
+            return {'message': 'Missing required field in passed data'}, 400

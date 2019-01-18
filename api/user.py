@@ -3,9 +3,12 @@ from flask_restful import Resource, marshal_with, abort
 # Necessary for querying documents by their ID in mongo.
 from bson import ObjectId
 from safe_document import SafeDocument
+
 response_fields = {
         'resource': SafeDocument 
 }
+# Mandatory fields for any user.
+request_fields = ['first_name', 'last_name']
 
 class User(Resource):
     '''A user of the app.'''
@@ -51,7 +54,10 @@ class User(Resource):
 
     def post(self):
         new_user = request.get_json()
-        # Blindly assume the resource is valid.
-        new_user_id = self.db.users.insert_one(new_user).inserted_id
-        return {'_id': str(new_user_id)}, 201
+        # Validate the request data.
+        if set(new_user.keys()).issuperset(request_fields):
+            new_user_id = self.db.users.insert_one(new_user).inserted_id
+            return {'_id': str(new_user_id)}, 201
+        else:
+            return {'message': 'Missing required field in passed data'}, 400
 
