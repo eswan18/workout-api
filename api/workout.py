@@ -39,24 +39,39 @@ class Workout(Resource):
 
 
     def delete(self, workout_id):
-        # Unlike in GET requests, the request *must* specify an ID.
         workout_id = ObjectId(workout_id)
         # Delete it from the collection.
-        result = self.db.workouts.delete_one({'_id': ObjectId(workout_id)})
+        result = self.db.workouts.delete_one({'_id': workout_id})
         if result.deleted_count == 1:
             return {}, 204
         else:
             return {'message': 'No such workout_id'}, 400
 
     def put(self, workout_id):
-        raise NotImplementedError
-        # return a 204 code
+        '''Update a workout.'''
+        workout = request.get_json()
+        workout_id = ObjectId(workout_id)
+        # Validate the request data.
+        if not set(workout.keys()).issuperset(request_fields):
+            return {'message': 'Missing required field in passed data'}, 400
+        # Check that there is a current version of this workout to delete.
+        result = self.db.workouts.delete_one({'_id': workout_id})
+        if result.deleted_count != 1:
+            return {'message': 'No such workout_id'}, 400
+        # With a successful deletion, add the new version of the workout.
+        workout['_id'] = workout_id
+        result = self.db.workouts.insert_one(workout)
+        # It's important that we inserted the new workout under the same ID as
+        # as the old one.
+        assert workout_id == result.inserted_id
+        return {'_id': str(workout_id)}, 204
 
     def post(self):
         workout = request.get_json()
         # Validate the request data.
-        if set(workout.keys()).issuperset(request_fields):
-            workout_id = self.db.workouts.insert_one(workout).inserted_id
-            return {'_id': str(workout_id)}, 201
-        else:
+        if not set(workout.keys()).issuperset(request_fields):
             return {'message': 'Missing required field in passed data'}, 400
+        # Add the new workout to mongo.
+        result = self.db.workouts.insert_one(workout)
+        workout_id = result.inserted_id
+        return {'_id': str(workout_id)}, 201
