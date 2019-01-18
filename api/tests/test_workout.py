@@ -59,3 +59,9 @@ def test_post_workout():
     # (This dict equality test feels like it shouldn't work right but it does.)
     del wkt2['_id']
     assert wkt1 == wkt2
+
+def test_post_empty_workout():
+    '''Attempt to post an empty workout.'''
+    wkt = {}
+    response = requests.post(API_URL, json=wkt)
+    assert response.status_code == 400

@@ -56,3 +56,9 @@ def test_post_user():
     # (This dict equality test feels like it shouldn't work right but it does.)
     del user2['_id']
     assert user1 == user2
+
+def test_post_empty_user():
+    '''Attempt to post an empty user.'''
+    user = {}
+    response = requests.post(API_URL, json=user)
+    assert response.status_code == 400
