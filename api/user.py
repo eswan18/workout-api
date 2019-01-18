@@ -22,24 +22,24 @@ class User(Resource):
             users = self.db.users.find({'_id': object_id})
             # Check that the ID returned a result.
             if users.count() < 1:
-                raise ValueError('No such user ID in database')
+                return {'message': 'No such user_id'}, 404
             # Assume that only one result was returned, so we can take the first
             # element returned by the cursor.
             response = users.next()
             users.close()
-            return {'resource': response}
+            return {'resource': response}, 200
         # If no user_id was passed, return all users.
         else:
             users = self.db.users.find()
             response = list(users)
-            return {'resource': response}
+            return {'resource': response}, 200
 
 
     def delete(self, user_id):
         # Unlike in GET requests, the request *must* specify an ID.
         user_id = ObjectId(user_id)
         # Delete it from the collection.
-        result = self.db.users.delete_one({'_id': user_id})
+        result = self.db.users.delete_one({'_id': ObjectId(user_id)})
         if result.deleted_count == 1:
             return {}, 204
         else:
