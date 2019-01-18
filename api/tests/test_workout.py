@@ -45,6 +45,20 @@ def test_delete_workout():
     response = requests.get(API_URL + first_workout_id)
     assert response.status_code == 404
 
+def test_put_workout():
+    '''Update an existing workout.'''
+    wkt_id = '5c407631c62a6669baedbf2c'
+    wkt = {'time': '2018-12-21 11:53:17', 'title': 'Indoor Run',
+           # Here begins new stuff
+           'distance': 3.03, 'duration': '21:10', 'distance_unit': 'miles'}
+    response = requests.put(API_URL + wkt_id, json=wkt)
+    assert response.status_code == 204
+    # Make sure that the record really was updated.
+    response = requests.get(API_URL + wkt_id)
+    resource = response.json()['resource']
+    del resource['_id']
+    assert resource == wkt
+
 def test_post_workout():
     '''Post a new workout and then GET it using the returned ID.'''
     wkt1 = {'title': 'Lift Push', 'sets':
