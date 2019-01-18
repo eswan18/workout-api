@@ -32,3 +32,17 @@ def test_get_all_users():
     assert isinstance(resource, list)
     assert len(resource) == 2
     assert all([x.get('first_name') is not None for x in resource])
+
+def test_post_user():
+    '''Post a new user and then GET it using the returned ID.'''
+    user1 = {'first_name': 'Artemis', 'last_name': 'Fowl',
+            'birthdate': '2000-01-01'}
+    response1 = requests.post(API_URL, json=user1)
+    assert response1.status_code == 201
+    _id = response1.json()['_id']
+    response2 = requests.get(API_URL + _id)
+    user2 = response2.json()['resource']
+    # Make sure the received resource is the same as the posted one.
+    # (This dict equality test feels like it shouldn't work right but it does.)
+    del user2['_id']
+    assert user1 == user2
