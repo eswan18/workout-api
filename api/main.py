@@ -2,7 +2,8 @@ import os
 from flask import Flask
 from flask_restful import Api
 from pymongo import MongoClient
-from resources import Workout, User
+from user import User
+from workout import Workout
 
 app = Flask(__name__)
 api = Api(app)
