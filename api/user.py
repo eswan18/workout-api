@@ -36,8 +36,14 @@ class User(Resource):
 
 
     def delete(self, user_id):
-        raise NotImplementedError
-        # return a 204 code
+        # Unlike in GET requests, the request *must* specify an ID.
+        user_id = ObjectId(user_id)
+        # Delete it from the collection.
+        result = self.db.users.delete_one({'_id': user_id})
+        if result.deleted_count == 1:
+            return {}, 204
+        else:
+            return {'message': 'No such user_id'}, 400
         
     def put(self, user_id):
         raise NotImplementedError
