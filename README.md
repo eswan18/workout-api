@@ -7,7 +7,7 @@ To start the Restful API service, simply run
 ```python
 python main.py
 ```
-from within the `app` directory.
+from within the `api` directory.
 
 ### Running Tests
 Each component (API and front-end) currently has its own tests.
@@ -17,4 +17,4 @@ Then start the API service (see above) and then run
 ```bash
 pytest
 ```
-from within the `app` directory.
+from within the `api` directory.
