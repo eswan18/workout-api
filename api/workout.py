@@ -40,7 +40,7 @@ class Workout(Resource):
         # Unlike in GET requests, the request *must* specify an ID.
         workout_id = ObjectId(workout_id)
         # Delete it from the collection.
-        result = self.db.workouts.delete_one({'_id': workout_id})
+        result = self.db.workouts.delete_one({'_id': ObjectId(workout_id)})
         if result.deleted_count == 1:
             return {}, 204
         else:

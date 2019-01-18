@@ -33,6 +33,16 @@ def test_get_all_users():
     assert len(resource) == 2
     assert all([x.get('first_name') is not None for x in resource])
 
+def test_delete_user():
+    '''Try to delete the first user that comes back from GET.'''
+    all_users = requests.get(API_URL).json()['resource']
+    first_user_id = all_users[0]['_id']
+    response = requests.delete(API_URL + first_user_id)
+    assert response.status_code == 204
+    # Try to retrieve the id again with GET.
+    response = requests.get(API_URL + first_user_id)
+    assert response.status_code == 404
+
 def test_post_user():
     '''Post a new user and then GET it using the returned ID.'''
     user1 = {'first_name': 'Artemis', 'last_name': 'Fowl',
