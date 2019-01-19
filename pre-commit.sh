@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # pre-commit.sh
 STASH_NAME="pre-commit-$(date +%s)"
 git stash save -q --keep-index $STASH_NAME
