@@ -4,6 +4,7 @@ import pymongo
 
 # Import the testing data that will populate the mongo collection.
 from data.data import workouts as workouts_collection
+import data.data as sample_docs
 
 API_URL = 'http://localhost:5000/workout/'
 MONGO_URL = 'rpi3-1'
@@ -79,3 +80,31 @@ def test_post_empty_workout():
     wkt = {}
     response = requests.post(API_URL, json=wkt)
     assert response.status_code == 400
+
+def test_complex_workflow():
+    '''Do a significant amount of db modifications and check the result.'''
+    # Log a lift.
+    sample_lift = sample_docs.push_lift_doc.copy()
+    response = requests.post(API_URL, json=sample_lift)
+    lift_id = response.json()['_id']
+    assert response.status_code == 201
+    # Log several runs.
+    for run_doc in sample_docs.run_docs:
+        response = requests.post(API_URL, json=run_doc)
+        assert response.status_code == 201
+    # Retrive all workouts; there should be 13 now.
+    response = requests.get(API_URL)
+    assert len(response.json()['resource']) == 13
+    # Delete two of the original workouts.
+    for _id in ['5c40713dc62a66697a702bf8', '5c407641c62a6669baedbf2d']:
+        response = requests.delete(API_URL + _id)
+        assert response.status_code == 204
+    # Try to delete them again -- should fail.
+    for _id in ['5c40713dc62a66697a702bf8', '5c407641c62a6669baedbf2d']:
+        response = requests.delete(API_URL + _id)
+        assert response.status_code == 400
+    # Get the lift we first inserted and make sure it's unchanged.
+    response = requests.get(API_URL + lift_id)
+    stored_lift = response.json()['resource']
+    del stored_lift['_id']
+    assert stored_lift == sample_lift
