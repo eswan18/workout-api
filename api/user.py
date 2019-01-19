@@ -17,6 +17,7 @@ class User(Resource):
 
     @marshal_with(response_fields)
     def get(self, **kwargs):
+        '''Retrieve info for one or all users.'''
         user_id = kwargs.get('user_id')
         # If a user_id was passed, convert it to an ObjectId and query mongo
         # for it.
@@ -39,6 +40,7 @@ class User(Resource):
 
 
     def delete(self, user_id):
+        '''Delete a user.'''
         # Unlike in GET requests, the request *must* specify an ID.
         user_id = ObjectId(user_id)
         # Delete it from the collection.
@@ -68,6 +70,7 @@ class User(Resource):
         return {'_id': str(user_id)}, 204
 
     def post(self):
+        '''Create a new user.'''
         new_user = request.get_json()
         # Validate the request data.
         if set(new_user.keys()).issuperset(request_fields):

@@ -17,6 +17,7 @@ class Workout(Resource):
 
     @marshal_with(response_fields)
     def get(self, **kwargs):
+        '''Retrieve one or all workouts.'''
         workout_id = kwargs.get('workout_id')
         # If a workout_id was passed, convert it to an ObjectId and query mongo
         # for it.
@@ -39,6 +40,7 @@ class Workout(Resource):
 
 
     def delete(self, workout_id):
+        '''Delete a workout.'''
         workout_id = ObjectId(workout_id)
         # Delete it from the collection.
         result = self.db.workouts.delete_one({'_id': workout_id})
@@ -67,6 +69,7 @@ class Workout(Resource):
         return {'_id': str(workout_id)}, 204
 
     def post(self):
+        '''Create a new workout.'''
         workout = request.get_json()
         # Validate the request data.
         if not set(workout.keys()).issuperset(request_fields):
