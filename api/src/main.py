@@ -23,4 +23,4 @@ if __name__ == '__main__':
             resource_class_kwargs={'db': db})
     api.add_resource(User, '/user/', '/user/<string:user_id>',
             resource_class_kwargs={'db': db})
-    app.run()
+    app.run('0.0.0.0')
