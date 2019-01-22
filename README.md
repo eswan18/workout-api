@@ -2,7 +2,7 @@
 
 ### Trello Boards:
 - **API**: [https://trello.com/b/p83BVfus/workout-app-api](https://trello.com/b/p83BVfus/workout-app-api)
-- **API**: [https://trello.com/b/mF9YLzlG/workout-app-front-end](https://trello.com/b/mF9YLzlG/workout-app-front-end)
+- **Front-end**: [https://trello.com/b/mF9YLzlG/workout-app-front-end](https://trello.com/b/mF9YLzlG/workout-app-front-end)
 
 ### Running the Restful API
 1. Build the image. From within the `api` directory:
