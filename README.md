@@ -11,7 +11,7 @@
     ```
 2. Then launch the container, mapping port 5000 to the local machine:
     ```bash
-    docker run -p 5000:5000 workout_app_api
+    docker run -d --network=host workout_app_api
     ```
 The API will then be accessible at `http://localhost:5000`.
 
