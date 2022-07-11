@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class Set(BaseModel):
     weight: float
-    weight_unit: str = 'lbs'
+    weight_unit: str | None
     reps: int | None
     seconds: int | None
     notes: str
