@@ -1,8 +1,8 @@
 """Create core tables
 
-Revision ID: fe9b53d5880c
+Revision ID: 5adb9c80352c
 Revises: 
-Create Date: 2022-07-11 20:07:51.756097
+Create Date: 2022-07-11 21:23:29.340951
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "fe9b53d5880c"
+revision = "5adb9c80352c"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -55,6 +55,11 @@ def upgrade() -> None:
         sa.Column("end_time", sa.DateTime(), nullable=True),
         sa.Column("status", sa.Text(), nullable=False),
         sa.Column("workout_type_id", postgresql.UUID(as_uuid=True), nullable=True),
+        sa.Column("user_id", postgresql.UUID(as_uuid=True), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["user_id"],
+            ["users.id"],
+        ),
         sa.ForeignKeyConstraint(
             ["workout_type_id"],
             ["workout_types.id"],
@@ -71,9 +76,14 @@ def upgrade() -> None:
         sa.Column("notes", sa.Text(), nullable=True),
         sa.Column("exercise_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("workout_id", postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column("user_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.ForeignKeyConstraint(
             ["exercise_id"],
             ["exercises.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["user_id"],
+            ["users.id"],
         ),
         sa.ForeignKeyConstraint(
             ["workout_id"],
