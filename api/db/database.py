@@ -17,7 +17,7 @@ def get_engine() -> Engine:
     return create_engine(DB_URL)
 
 
-def get_db():
+async def get_db():
     engine = get_engine()
     SessionLocal = sessionmaker(
         autocommit=False,
