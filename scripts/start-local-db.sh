@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Start fresh container.
 docker run \
     --name workout-api-postgres \
@@ -9,3 +11,6 @@ docker run \
 sleep 1
 # Run migrations.
 alembic upgrade head
+# Insert seed data
+here=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+$here/run_seeds.sh
