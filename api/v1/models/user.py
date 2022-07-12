@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import BaseModel
 
 
@@ -10,10 +12,12 @@ class UserIn(User):
     password: str
 
 
-class UserInDB(User):
-    id: str
+class UserOut(User):
+    id: UUID
+
+
+class UserInDB(UserOut):
     hashed_pw: str
 
-
-class UserOut(User):
-    id: str
+    class Config:
+        orm_mode = True
