@@ -17,6 +17,8 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here for 'autogenerate' support.
 from api.db import Base
+# This import is necessary to trigger the definitions of all models.
+from api.db import models
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py, can be acquired:
