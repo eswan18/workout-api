@@ -7,11 +7,12 @@ from . import workouts
 from . import workout_types
 
 router = APIRouter(
-    prefix='/v1',
-    responses={404: {'description': 'Not found'}},
+    prefix="/v1",
+    responses={404: {"description": "Not found"}},
 )
 
-@router.get('/')
+
+@router.get("/")
 def v1_home():
     return "you've reached v1 of the api"
 

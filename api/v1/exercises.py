@@ -7,12 +7,12 @@ from ..db import models as db_models
 from ..db import get_db
 
 router = APIRouter(
-    prefix='/exercises',
+    prefix="/exercises",
     dependencies=[Depends(get_db)],
 )
 
 
-@router.get('/', response_model=list[Exercise])
+@router.get("/", response_model=list[Exercise])
 async def exercises(db: Session = Depends(get_db)):
     result = db.query(db_models.Exercise).all()
     records = [ExerciseInDB.from_orm(row) for row in result]

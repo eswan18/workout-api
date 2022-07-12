@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
-router = APIRouter(prefix='/workouts')
+router = APIRouter(prefix="/workouts")
 
 
-@router.get('/')
+@router.get("/")
 def workouts():
-    return 'pretend these are all the workouts'
+    return "pretend these are all the workouts"

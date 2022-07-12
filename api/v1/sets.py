@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
-router = APIRouter(prefix='/sets')
+router = APIRouter(prefix="/sets")
 
 
-@router.get('/')
+@router.get("/")
 def sets():
-    return 'pretend these are all the sets'
+    return "pretend these are all the sets"
