@@ -28,4 +28,4 @@ class Set(Base):
     workout = relationship("Workout", backref="sets")
 
     user_id: UUID = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    user = relationship("User", backref="users")
+    user = relationship("User", backref="sets")
