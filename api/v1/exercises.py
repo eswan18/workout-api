@@ -1,8 +1,18 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
-router = APIRouter(prefix='/exercises')
+from sqlalchemy.orm import Session
+
+from .models.exercise import Exercise
+from ..db import models as db_models
+from ..db import get_db
+
+router = APIRouter(
+    prefix='/exercises',
+    dependencies=[Depends(get_db)],
+)
 
 
 @router.get('/')
-def exercises():
-    return 'pretend these are all the exercises'
+async def exercises(db: Session = Depends(get_db)) -> list[Exercise]:
+    result = db.query(db_models.Exercise)
+    print(result)
