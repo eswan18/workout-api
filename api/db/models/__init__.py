@@ -4,4 +4,4 @@ from .user import User
 from .workout import Workout
 from .workout_type import WorkoutType
 
-__all__ = ['Exercise', 'Set', 'User', 'Workout', 'WorkoutType']
+__all__ = ["Exercise", "Set", "User", "Workout", "WorkoutType"]

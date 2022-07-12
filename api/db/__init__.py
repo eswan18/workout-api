@@ -1,4 +1,4 @@
 from .database import Base
 
 
-__all__ = ['Base']
+__all__ = ["Base"]

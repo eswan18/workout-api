@@ -7,7 +7,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 
-DB_URL = os.environ['DATABASE_URL']
+DB_URL = os.environ["DATABASE_URL"]
 
 Base = declarative_base()
 
