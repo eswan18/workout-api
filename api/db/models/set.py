@@ -1,6 +1,7 @@
 import uuid
+from datetime import datetime
 
-from sqlalchemy import Column, ForeignKey, Integer, Float, Text
+from sqlalchemy import Column, ForeignKey, Integer, Float, Text, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -11,6 +12,7 @@ class Set(Base):
     __tablename__ = "sets"
 
     id: UUID = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    start_time: datetime = Column(DateTime, nullable=False)
     weight: float = Column(Float, nullable=False)
     weight_unit: str | None = Column(Text)
     reps: int | None = Column(Integer)
