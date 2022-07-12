@@ -8,13 +8,14 @@ from sqlalchemy.orm import sessionmaker
 
 
 DB_URL = os.environ["DATABASE_URL"]
+db_url = DB_URL.replace('postgres://', 'postgresql://')
 
 Base = declarative_base()
 
 
 @cache
 def get_engine() -> Engine:
-    return create_engine(DB_URL)
+    return create_engine(db_url)
 
 
 async def get_db():
