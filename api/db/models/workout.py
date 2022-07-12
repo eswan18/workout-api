@@ -20,3 +20,6 @@ class Workout(Base):
         UUID(as_uuid=True), ForeignKey("workout_types.id")
     )
     workout_type = relationship("WorkoutType", backref="workouts")
+
+    user_id: UUID = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user = relationship("User", backref="users")
