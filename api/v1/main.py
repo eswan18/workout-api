@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+from . import token
 from . import exercises
 from . import users
 from . import sets
@@ -17,6 +18,7 @@ def v1_home():
     return "you've reached v1 of the api"
 
 
+router.include_router(token.router)
 router.include_router(exercises.router)
 router.include_router(users.router)
 router.include_router(sets.router)
