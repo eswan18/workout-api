@@ -18,9 +18,9 @@ def v1_home():
     return "you've reached v1 of the api"
 
 
-router.include_router(token.router)
-router.include_router(exercises.router)
-router.include_router(users.router)
-router.include_router(sets.router)
-router.include_router(workouts.router)
-router.include_router(workout_types.router)
+router.include_router(token.router, tags=['Login'])
+router.include_router(users.router, tags=['Users'])
+router.include_router(exercises.router, tags=['Exercises'])
+router.include_router(sets.router, tags=['Sets'])
+router.include_router(workouts.router, tags=['Workouts'])
+router.include_router(workout_types.router, tags=['Workout Types'])
