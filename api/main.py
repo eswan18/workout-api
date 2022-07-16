@@ -11,4 +11,4 @@ def home():
     return "welcome to the workout api"
 
 
-app.include_router(v1.router)
+app.mount('/v1', v1.app, name='Version 1')

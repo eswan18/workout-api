@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import FastAPI
 
 from . import token
 from . import exercises
@@ -7,20 +7,17 @@ from . import sets
 from . import workouts
 from . import workout_types
 
-router = APIRouter(
-    prefix="/v1",
-    responses={404: {"description": "Not found"}},
-)
+v1_app = FastAPI()
 
 
-@router.get("/")
-def v1_home():
+@v1_app.get("/")
+def home():
     return "you've reached v1 of the api"
 
 
-router.include_router(token.router, tags=['Login'])
-router.include_router(users.router, tags=['Users'])
-router.include_router(exercises.router, tags=['Exercises'])
-router.include_router(sets.router, tags=['Sets'])
-router.include_router(workouts.router, tags=['Workouts'])
-router.include_router(workout_types.router, tags=['Workout Types'])
+v1_app.include_router(token.router, tags=['Login'])
+v1_app.include_router(users.router, tags=['Users'])
+v1_app.include_router(exercises.router, tags=['Exercises'])
+v1_app.include_router(sets.router, tags=['Sets'])
+v1_app.include_router(workouts.router, tags=['Workouts'])
+v1_app.include_router(workout_types.router, tags=['Workout Types'])

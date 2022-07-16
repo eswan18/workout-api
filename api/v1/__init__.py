@@ -1,3 +1,3 @@
-from .main import router
+from .main import v1_app as app
 
-__all__ = ["router"]
+__all__ = ["app"]
