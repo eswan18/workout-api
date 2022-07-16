@@ -21,4 +21,4 @@ async def login_for_access_token(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    return create_token_payload(user.username, form_data, db)
+    return create_token_payload(user.email, form_data, db)
