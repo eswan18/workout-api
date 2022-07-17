@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from .models.workout_type import WorkoutTypeIn, WorkoutTypeInDB
-from .auth import get_current_user
-from ..db import models as db_models
-from ..db import get_db
+from ..models.workout_type import WorkoutTypeIn, WorkoutTypeInDB
+from ..auth import get_current_user
+from ...db import models as db_models
+from ...db import get_db
 
 router = APIRouter(prefix="/workout_types")
 

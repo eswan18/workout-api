@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from .models.exercise import ExerciseInDB, ExerciseIn
-from .auth import get_current_user
-from ..db import models as db_models
-from ..db import get_db
+from ..models.exercise import ExerciseInDB, ExerciseIn
+from ..auth import get_current_user
+from ...db import models as db_models
+from ...db import get_db
 
 router = APIRouter(prefix="/exercises")
 
