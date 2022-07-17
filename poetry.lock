@@ -774,6 +774,14 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "types-python-jose"
+version = "3.3.4"
+description = "Typing stubs for python-jose"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "typing-extensions"
 version = "4.3.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
@@ -846,7 +854,7 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.10"
-content-hash = "0a7894f3353c3a5d19db1cf8e9ab5b2d33d7c3e7ad51251d8d216ef6f53c3411"
+content-hash = "f27c860bb61769cb797a83b63f5e25a0b273ce224276ea15fc94d8bd9cd985c8"
 
 [metadata.files]
 alembic = [
@@ -1460,6 +1468,10 @@ traitlets = [
 types-passlib = [
     {file = "types-passlib-1.7.7.tar.gz", hash = "sha256:3a5f7e8cbe563ce71717a0fd92e25223c263418ffcaae61643b9bc1f701835cd"},
     {file = "types_passlib-1.7.7-py3-none-any.whl", hash = "sha256:49fae3bb06f444fd452df1b1cdb584d592cf4086f4ece38166aa47efc95cff5a"},
+]
+types-python-jose = [
+    {file = "types-python-jose-3.3.4.tar.gz", hash = "sha256:a8331dd72da5adf03853d4c003d08d0621dd9eb7b7333571b04d81058c55fac6"},
+    {file = "types_python_jose-3.3.4-py3-none-any.whl", hash = "sha256:04fb427bc906e864e8c313db469920f71ffa85839b43fe355f7dc861330c6da3"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.3.0-py3-none-any.whl", hash = "sha256:25642c956049920a5aa49edcdd6ab1e06d7e5d467fc00e0506c44ac86fbfca02"},
