@@ -24,7 +24,7 @@ def create_workout(
     workout: WorkoutIn,
     db: Session = Depends(get_db),
     current_user: db_models.User = Depends(get_current_user),
-) -> WorkoutInDB:
+) -> db_models.Workout:
     # Add the current user's ID to the record.
     workout_dict = workout.dict()
     workout_dict["user_id"] = current_user.id

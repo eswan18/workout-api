@@ -16,7 +16,7 @@ def users() -> str:
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserOut)
-def create_user(user: UserIn, db: Session = Depends(get_db)) -> UserOut:
+def create_user(user: UserIn, db: Session = Depends(get_db)) -> db_models.User:
     email = user.email
     password = user.password
     hashed_pw = hash_pw(email, password)
