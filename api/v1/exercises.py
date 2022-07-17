@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from .models.exercise import Exercise, ExerciseInDB
+from .models.exercise import ExerciseInDB
 from .auth import get_current_user
 from ..db import models as db_models
 from ..db import get_db
