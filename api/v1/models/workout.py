@@ -18,16 +18,3 @@ class WorkoutInDB(WorkoutIn):
 
     class Config:
         orm_mode = True
-
-
-class WorkoutType(BaseModel):
-    name: str
-    notes: str | None
-    parent_workout_type_id: UUID | None
-
-
-class WorkoutTypeInDB(WorkoutType):
-    id: UUID
-
-    class Config:
-        orm_mode = True
