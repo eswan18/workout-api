@@ -11,4 +11,4 @@ def home():
     return "welcome to the workout api"
 
 
-app.mount('/v1', v1.app, name='Version 1')
+app.mount("/v1", v1.app, name="Version 1")

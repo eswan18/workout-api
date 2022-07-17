@@ -9,6 +9,7 @@ from .auth import authenticate_user, create_token_payload
 
 router = APIRouter(prefix="/token")
 
+
 @router.post("/", response_model=Token)
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),

@@ -61,9 +61,7 @@ async def get_current_user(
 
 
 def authenticate_user(
-    email: str,
-    password: str,
-    db: Session = Depends(get_db)
+    email: str, password: str, db: Session = Depends(get_db)
 ) -> db_models.User | None:
     """
     Given an email & password, return a user if the login is valid; otherwise None.
@@ -101,6 +99,6 @@ def create_access_token(
     Create a jwt for a user, with specified time-to-live.
     """
     expire_time = datetime.utcnow() + expiration_delta
-    to_encode = data | {'exp': expire_time}
+    to_encode = data | {"exp": expire_time}
     encoded_jwt = jwt.encode(to_encode, APP_SECRET, algorithm=ALGORITHM)
     return encoded_jwt

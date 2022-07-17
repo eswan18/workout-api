@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 
 
 DB_URL = os.environ["DATABASE_URL"]
-db_url = DB_URL.replace('postgres://', 'postgresql://')
+db_url = DB_URL.replace("postgres://", "postgresql://")
 
 Base = declarative_base()
 
