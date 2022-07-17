@@ -14,6 +14,9 @@ def workouts(
     db: Session = Depends(get_db),
     current_user: db_models.User = Depends(get_current_user),
 ) -> list[WorkoutInDB]:
+    """
+    Fetch all the workouts for your user.
+    """
     result = db.query(db_models.Workout).filter_by(user=current_user).all()
     records = [WorkoutInDB.from_orm(row) for row in result]
     return records
@@ -25,6 +28,9 @@ def create_workout(
     db: Session = Depends(get_db),
     current_user: db_models.User = Depends(get_current_user),
 ) -> db_models.Workout:
+    """
+    Record a new workout.
+    """
     # Add the current user's ID to the record.
     workout_dict = workout.dict()
     workout_dict["user_id"] = current_user.id
