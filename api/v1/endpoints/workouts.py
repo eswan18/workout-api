@@ -35,7 +35,7 @@ def create_workout(
     workout_dict = workout.dict()
     workout_dict["user_id"] = current_user.id
 
-    # Validate that the workout_type_id, if included, is present in the db.
+    # Validate that the workout_type_id, if included, is present in the DB.
     workout_type_id = workout_dict["workout_type_id"]
     if workout_type_id is not None:
         if (

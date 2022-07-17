@@ -1,9 +1,11 @@
 from uuid import UUID
+from datetime import datetime
 
 from pydantic import BaseModel
 
 
-class Set(BaseModel):
+class SetIn(BaseModel):
+    start_time: datetime
     weight: float
     weight_unit: str | None
     reps: int | None
@@ -12,11 +14,11 @@ class Set(BaseModel):
     # Relations
     exercise_id: UUID
     workout_id: UUID
-    user_id: UUID
 
 
-class SetInDB(Set):
+class SetInDB(SetIn):
     id: UUID
+    user_id: UUID
 
     class Config:
         orm_mode = True
