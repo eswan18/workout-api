@@ -10,6 +10,7 @@ class Workout(BaseModel):
     status: str
     notes: str | None
     workout_type_id: UUID | None
+    user_id: UUID
 
 
 class WorkoutInDB(Workout):
