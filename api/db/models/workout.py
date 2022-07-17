@@ -6,6 +6,8 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from ..database import Base
+from .workout_type import WorkoutType
+from .user import User
 
 
 class Workout(Base):
@@ -20,7 +22,7 @@ class Workout(Base):
     workout_type_id: UUID | None = Column(
         UUID(as_uuid=True), ForeignKey("workout_types.id")
     )
-    workout_type = relationship("WorkoutType", backref="workouts")
+    workout_type: WorkoutType = relationship("WorkoutType", backref="workouts")
 
     user_id: UUID = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    user = relationship("User", backref="workouts")
+    user: User = relationship("User", backref="workouts")

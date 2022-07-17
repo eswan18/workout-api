@@ -6,6 +6,9 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from ..database import Base
+from .user import User
+from .workout import Workout
+from .exercise import Exercise
 
 
 class Set(Base):
@@ -22,12 +25,12 @@ class Set(Base):
     exercise_id: UUID = Column(
         UUID(as_uuid=True), ForeignKey("exercises.id"), nullable=False
     )
-    exercise = relationship("Exercise", backref="sets")
+    exercise: Exercise = relationship("Exercise", backref="sets")
 
     workout_id: UUID = Column(
         UUID(as_uuid=True), ForeignKey("workouts.id"), nullable=False
     )
-    workout = relationship("Workout", backref="sets")
+    workout: Workout = relationship("Workout", backref="sets")
 
     user_id: UUID = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    user = relationship("User", backref="sets")
+    user: User = relationship("User", backref="sets")

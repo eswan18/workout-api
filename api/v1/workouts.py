@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, status, HTTPException
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .models.workout import WorkoutIn, WorkoutInDB
