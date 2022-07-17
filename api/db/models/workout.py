@@ -15,6 +15,7 @@ class Workout(Base):
     start_time: datetime | None = Column(DateTime)
     end_time: datetime | None = Column(DateTime)
     status: str = Column(Text, nullable=False)
+    notes: str | None = Column(Text)
 
     workout_type_id: UUID | None = Column(
         UUID(as_uuid=True), ForeignKey("workout_types.id")
