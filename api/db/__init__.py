@@ -1,4 +1,4 @@
-from .database import Base, get_db
+from .database import Base, get_db, model_id_exists
 
 
-__all__ = ["Base", "get_db"]
+__all__ = ["Base", "get_db", "model_id_exists"]

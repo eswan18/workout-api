@@ -1,10 +1,12 @@
 import os
+from uuid import UUID
 from functools import cache
+from typing import AsyncIterator
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session, DeclarativeMeta
 
 
 DB_URL = os.environ["DATABASE_URL"]
@@ -18,7 +20,7 @@ def get_engine() -> Engine:
     return create_engine(db_url)
 
 
-async def get_db():
+async def get_db() -> AsyncIterator[Session]:
     engine = get_engine()
     SessionLocal = sessionmaker(
         autocommit=False,
@@ -30,3 +32,15 @@ async def get_db():
         yield db
     finally:
         db.close()
+
+
+def model_id_exists(
+    Model: DeclarativeMeta,
+    id: str | UUID,
+    db: Session,
+) -> bool:
+    first_instance = db.query(Model.id).filter_by(id=id).first()  # type: ignore
+    if first_instance is None:
+        return False
+    else:
+        return True

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from ..models.set import SetIn, SetInDB
 from ..auth import get_current_user
 from ...db import models as db_models
-from ...db import get_db
+from ...db import get_db, model_id_exists
 
 router = APIRouter(prefix="/sets")
 
@@ -36,16 +36,18 @@ def create_set(
     set_dict["user_id"] = current_user.id
 
     # Validate that the exercise ID and workout ID are present in the DB.
-    id_and_model_class = [
-        (set_dict["exercise_id"], db_models.Exercise),
-        (set_dict["workout_id"], db_models.Workout),
-    ]
-    for id, model in id_and_model_class:
-        if db.query(model).filter_by(id=id).first() is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"{model.__name__} with id {id} does not exist",
-            )
+    exercise_id = set_dict["exercise_id"]
+    if not model_id_exists(Model=db_models.Exercise, id=exercise_id, db=db):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"exercise with id {exercise_id} does not exist",
+        )
+    workout_id = set_dict["workout_id"]
+    if not model_id_exists(Model=db_models.Workout, id=workout_id, db=db):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"workout with id {workout_id} does not exist",
+        )
 
     set_record = db_models.Set(**set_dict)
     db.add(set_record)

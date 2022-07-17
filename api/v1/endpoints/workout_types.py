@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from ..models.workout_type import WorkoutTypeIn, WorkoutTypeInDB
 from ..auth import get_current_user
 from ...db import models as db_models
-from ...db import get_db
+from ...db import get_db, model_id_exists
 
 router = APIRouter(prefix="/workout_types")
 
@@ -34,7 +34,7 @@ def create_workout_type(
     # Make sure that the parent workout type ID, if included, is in the DB.
     parent_id = workout_type.parent_workout_type_id
     if parent_id is not None:
-        if db.query(db_models.WorkoutType.id).filter_by(id=parent_id).first() is None:
+        if not model_id_exists(Model=db_models.WorkoutType, id=parent_id, db=db):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"workout type with id {parent_id} does not exist",
