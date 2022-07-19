@@ -22,7 +22,7 @@ def workout_types(
     return records
 
 
-@router.post("/")
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=WorkoutTypeInDB)
 def create_workout_type(
     workout_type: WorkoutTypeIn,
     db: Session = Depends(get_db),

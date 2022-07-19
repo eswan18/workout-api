@@ -22,7 +22,7 @@ def sets(
     return records
 
 
-@router.post("/")
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=SetInDB)
 def create_set(
     set_: SetIn,
     db: Session = Depends(get_db),

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from ..models.exercise import ExerciseInDB, ExerciseIn
@@ -22,7 +22,7 @@ def exercises(
     return records
 
 
-@router.post("/", response_model=ExerciseInDB)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=ExerciseInDB)
 def create_exercise(
     exercise: ExerciseIn,
     db: Session = Depends(get_db),

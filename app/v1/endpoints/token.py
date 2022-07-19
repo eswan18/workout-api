@@ -10,11 +10,11 @@ from ...db.database import get_db
 router = APIRouter(prefix="/token")
 
 
-@router.post("/", response_model=Token)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=Token)
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
-):
+) -> dict[str, str]:
     user = authenticate_user(form_data.username, form_data.password, db=db)
     if user is None:
         raise HTTPException(
