@@ -16,10 +16,10 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # add your model's MetaData object here for 'autogenerate' support.
-from api.db import Base
+from app.db import Base
 
 # This import is necessary to trigger the definitions of all models.
-from api.db import models
+from app.db import models
 
 target_metadata = Base.metadata
 
