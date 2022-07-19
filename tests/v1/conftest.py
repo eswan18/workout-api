@@ -21,7 +21,7 @@ def fake_current_user(client) -> Iterator[db_models.User]:
         pw_hash="16161616",
     )
 
-    async def get_fake_user(token=None, db=None) -> db_models.User:
+    async def get_fake_user() -> db_models.User:
         return user
 
     client.app.dependency_overrides[auth.get_current_user] = get_fake_user
