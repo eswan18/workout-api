@@ -1,6 +1,6 @@
 import os
 
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException, Body
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -18,7 +18,7 @@ router = APIRouter(prefix="/users")
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserOut)
 def create_user(
     user: UserIn,
-    secret: str,
+    secret: str = Body(),
     db: Session = Depends(get_db),
 ) -> db_models.User:
     """
