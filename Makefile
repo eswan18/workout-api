@@ -7,4 +7,4 @@ serve: $(SRC_FILES)
 	uvicorn api.main:app --host 0.0.0.0 --port $(PORT)
 
 devserve: $(SRC_FILES)
-	uvicorn api.main:app --host 0.0.0.0 --port $(PORT) --reload
+	uvicorn app.main:app --host 0.0.0.0 --port $(PORT) --reload
