@@ -1,3 +1,5 @@
+import os
+
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -8,11 +10,27 @@ from ...db import models as db_models
 from ...db import get_db
 from ..auth import hash_pw
 
+USER_CREATION_SECRET = os.environ["USER_CREATION_SECRET"]
+
 router = APIRouter(prefix="/users")
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=UserOut)
-def create_user(user: UserIn, db: Session = Depends(get_db)) -> db_models.User:
+def create_user(
+    user: UserIn,
+    secret: str,
+    db: Session = Depends(get_db),
+) -> db_models.User:
+    """
+    Create a new user. Requires a secret string, for now.
+    """
+    # The worst auth ever, but works until I add a Captcha or something.
+    if secret != USER_CREATION_SECRET:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect user creation secret",
+        )
+
     email = user.email
     password = user.password
     hashed_pw = hash_pw(email, password)
