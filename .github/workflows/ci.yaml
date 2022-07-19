@@ -1,0 +1,67 @@
+name: CI
+
+on: push
+
+jobs:
+  lint:
+    name: Lint and Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+      - name: Install Poetry
+        uses: abatilo/actions-poetry@v2.1.3
+        with:
+          poetry-version: 1.1
+      - name: Install Package and Dependencies
+        run:
+          poetry install
+      - name: Lint
+        run:
+          poetry run make lint
+	  - name: Typecheck
+		run:
+		  poetry run make typecheck
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: workout_api
+        ports:
+          - 5432:5432
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+      - name: Install Poetry
+        uses: abatilo/actions-poetry@v2.1.3
+        with:
+          poetry-version: 1.1
+      - name: Install Package and Dependencies
+        run:
+          poetry install
+      - name: Run test
+        env:
+          APP_SECRET: dummysecret
+          DATABASE_URL: "postgresql://postgres:postgres@localhost/workout_api"
+		  USER_CREATION_SECRET: lestibournes
+        run:
+          poetry run make test
