@@ -23,9 +23,9 @@ jobs:
       - name: Lint
         run:
           poetry run make lint
-	  - name: Typecheck
-		run:
-		  poetry run make typecheck
+      - name: Typecheck
+        run:
+          poetry run make typecheck
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -62,6 +62,6 @@ jobs:
         env:
           APP_SECRET: dummysecret
           DATABASE_URL: "postgresql://postgres:postgres@localhost/workout_api"
-		  USER_CREATION_SECRET: lestibournes
+          USER_CREATION_SECRET: lestibournes
         run:
           poetry run make test
