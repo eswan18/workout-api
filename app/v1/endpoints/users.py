@@ -32,7 +32,6 @@ def create_user(user: UserIn, db: Session = Depends(get_db)) -> db_models.User:
 
 @router.get("/me", response_model=UserOut)
 def get_me(
-    db: Session = Depends(get_db),
     current_user: db_models.User = Depends(get_current_user),
 ) -> UserOut:
     """
