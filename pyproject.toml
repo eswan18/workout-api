@@ -1,6 +1,9 @@
 [tool.poetry]
 name = "workout_api"
 version = "0.1.0"
+packages = [
+    { include = "app" },
+]
 description = "A custom workout app to fit my needs"
 authors = ["Ethan Swan <ethanpswan@gmail.com>"]
 license = "MIT"

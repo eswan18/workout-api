@@ -1,4 +1,4 @@
-SRC_DIR = api
+SRC_DIR = app
 SRC_FILES = $(shell find $(SRC_DIR) -type f -name '*.py')
 PORT ?= 8000
 
