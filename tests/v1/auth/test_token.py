@@ -52,3 +52,16 @@ async def test_auth_fails_with_expired_jwt():
             fake_db = None
             with pytest.raises(HTTPException):
                 await auth.get_current_user(token=jwt, db=fake_db)
+
+
+def test_token_payload_contains_expected_keys():
+    fake_db = None
+    fake_form_data = None
+    payload = auth.create_token_payload(
+        email=FAKE_USER_DATA["email"],
+        form_data=fake_form_data,
+        db=fake_db,
+    )
+    assert len(payload) == 2
+    assert "access_token" in payload
+    assert payload["token_type"] == "bearer"
