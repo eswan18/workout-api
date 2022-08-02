@@ -47,6 +47,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+      - name: Run migrations
+        run: alembic upgrade head
       - name: Run DB Seeds
         run: bash scripts/run_seeds.sh
         env:
