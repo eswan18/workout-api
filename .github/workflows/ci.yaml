@@ -56,9 +56,16 @@ jobs:
         with:
           poetry-version: 1.1
       - name: Install Package and Dependencies
-        run:
-          poetry install
-      - name: Run test
+        run: poetry install
+      - name: Run Migrations
+        run: poetry run alembic upgrade head
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost/workout_api"
+      - name: Run DB Seeds
+        run: bash scripts/run_seeds.sh
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost/workout_api"
+      - name: Run Test
         env:
           APP_SECRET: dummysecret
           DATABASE_URL: "postgresql://postgres:postgres@localhost/workout_api"
