@@ -45,12 +45,12 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
       - name: Run DB Seeds
         run: bash scripts/run_seeds.sh
         env:
           DATABASE_URL: "postgresql://postgres:postgres@localhost/workout_api"
-      - name: Checkout Code
-        uses: actions/checkout@v3
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
