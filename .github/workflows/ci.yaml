@@ -47,12 +47,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-      - name: Run migrations
-        run: alembic upgrade head
-      - name: Run DB Seeds
-        run: bash scripts/run_seeds.sh
-        env:
-          DATABASE_URL: "postgresql://postgres:postgres@localhost/workout_api"
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
@@ -64,6 +58,14 @@ jobs:
       - name: Install Package and Dependencies
         run:
           poetry install
+      - name: Run Migrations
+        run: alembic upgrade head
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost/workout_api"
+      - name: Run DB Seeds
+        run: bash scripts/run_seeds.sh
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost/workout_api"
       - name: Run test
         env:
           APP_SECRET: dummysecret
