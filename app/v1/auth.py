@@ -109,6 +109,5 @@ def create_access_token(
     expire_time = datetime.utcnow() + expiration_delta
     expire_time_numeric = int(expire_time.timestamp())
     to_encode = data | {"exp": expire_time_numeric}
-    print(to_encode)
     encoded_jwt = jwt.encode(to_encode, APP_SECRET, algorithm=ALGORITHM)
     return encoded_jwt
