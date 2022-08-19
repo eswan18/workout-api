@@ -13,7 +13,7 @@ from ..db import models as db_models
 
 APP_SECRET = os.environ["APP_SECRET"]
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRATION_MINUTES = 30
+ACCESS_TOKEN_EXPIRATION_MINUTES = 60 * 24  # One day
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -107,6 +107,8 @@ def create_access_token(
     Create a jwt for a user, with specified time-to-live.
     """
     expire_time = datetime.utcnow() + expiration_delta
-    to_encode = data | {"exp": expire_time}
+    expire_time_numeric = int(expire_time.timestamp())
+    to_encode = data | {"exp": expire_time_numeric}
+    print(to_encode)
     encoded_jwt = jwt.encode(to_encode, APP_SECRET, algorithm=ALGORITHM)
     return encoded_jwt
