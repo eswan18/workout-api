@@ -21,3 +21,26 @@ In production, you should set your variables in a more stable way, and then....
 poetry install
 poetry run make serve
 ```
+
+
+## Deployment
+
+I host this via Railway. Make sure the CLI is installed and then log in:
+
+```bash
+railway login --browserless
+```
+
+The following commands will deploy the current local state of the repo into the specified environment.
+
+### Staging
+
+```bash
+railway up -e staging
+```
+
+### Production
+
+```bash
+railway up -e production
+```
