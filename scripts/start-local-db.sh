@@ -8,7 +8,7 @@ docker run \
     -e POSTGRES_PASSWORD=test \
     -d --rm \
     -p 6543:5432 \
-    postgres:14
+    postgres:14.6
 sleep 1
 # Run migrations.
 alembic upgrade head
