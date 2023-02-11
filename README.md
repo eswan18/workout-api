@@ -3,7 +3,12 @@
 [![CI](https://github.com/eswan18/workout_api/actions/workflows/ci.yaml/badge.svg)](https://github.com/eswan18/workout_api/actions/workflows/ci.yaml)
 
 This project is built with Poetry and intended to be run that way.
-To run it locally in development, install Poetry, and then you can run this code with:
+To run it locally in development you'll need to
+- Install Poetry
+- Install the `psql` CLI
+  - On Mac this can be done via Homebrew: `brew install libpq` and then add the installed bin folder to your path
+
+Then run the following code:
 
 ```bash
 # Install the project and dependencies
