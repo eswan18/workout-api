@@ -11,6 +11,7 @@ class WorkoutTypeIn(BaseModel):
 
 class WorkoutTypeInDB(WorkoutTypeIn):
     id: UUID
+    owner_user_id: UUID | None
 
     class Config:
         orm_mode = True
