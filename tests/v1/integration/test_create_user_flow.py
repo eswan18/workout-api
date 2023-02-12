@@ -51,7 +51,8 @@ def test_flow(client: TestClient):
     assert response.status_code == 200
     response_payload = response.json()
     assert response_payload["email"] == user_email
-    # Nothing should come back except "email" and "id" -- we want to be sure no password/creds fields are returned.
+    # Nothing should come back except "email" and "id" -- we want to be sure no
+    # password/creds fields are returned.
     assert set(response_payload.keys()) == {"email", "id"}
 
     ###################################################################################
@@ -63,12 +64,15 @@ def test_flow(client: TestClient):
         assert response.status_code == 200
         response_payload = response.json()
         assert response_payload == []
-    # There should be *some* resources returned in these cases, but none owned by you.
-    shared_resource_endpoints = ["/exercises/", "/workout_types/"]
-    for endpoint in shared_resource_endpoints:
+    # There should be *some* resources returned in these cases, but none owned by you;
+    # only "public" ones that have a null owner field.
+    owned_resource_endpoints = ["/workout_types/"]
+    for endpoint in owned_resource_endpoints:
         # There should be *some* resources returned in these cases, but none owned by you.
         response = client.get(endpoint, headers=auth_header)
         assert response.status_code == 200
         response_payload = response.json()
         assert isinstance(response_payload, list)
         assert len(response_payload) > 0
+        # Make sure that the owner_user_id field is None -- indicating that these are all "public".
+        assert all(wt["owner_user_id"] is None for wt in response_payload)
