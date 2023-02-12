@@ -18,7 +18,7 @@ class WorkoutType(Base):
     parent_workout_type_id: UUID | None = Column(
         UUID(as_uuid=True), ForeignKey("workout_types.id")
     )
-    children: list["WorkoutType"] = relationship(
+    children: Mapped[list["WorkoutType"]] = relationship(
         "WorkoutType", backref=backref("parent_workout_type", remote_side=[id])
     )
 

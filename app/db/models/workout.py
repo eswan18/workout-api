@@ -3,7 +3,7 @@ from datetime import datetime
 
 from sqlalchemy import Column, ForeignKey, DateTime, Text
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
 
 from ..database import Base
 from .workout_type import WorkoutType
@@ -22,7 +22,7 @@ class Workout(Base):
     workout_type_id: UUID | None = Column(
         UUID(as_uuid=True), ForeignKey("workout_types.id")
     )
-    workout_type: WorkoutType = relationship("WorkoutType", backref="workouts")
+    workout_type: Mapped[WorkoutType] = relationship("WorkoutType", backref="workouts")
 
     user_id: UUID = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    user: User = relationship("User", backref="workouts")
+    user: Mapped[User] = relationship("User", backref="workouts")

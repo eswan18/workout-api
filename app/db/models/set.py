@@ -3,7 +3,7 @@ from datetime import datetime
 
 from sqlalchemy import Column, ForeignKey, Integer, Float, Text, DateTime
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
 
 from ..database import Base
 from .user import User
@@ -25,12 +25,12 @@ class Set(Base):
     exercise_id: UUID = Column(
         UUID(as_uuid=True), ForeignKey("exercises.id"), nullable=False
     )
-    exercise: Exercise = relationship("Exercise", backref="sets")
+    exercise: Mapped[Exercise] = relationship("Exercise", backref="sets")
 
     workout_id: UUID = Column(
         UUID(as_uuid=True), ForeignKey("workouts.id"), nullable=False
     )
-    workout: Workout = relationship("Workout", backref="sets")
+    workout: Mapped[Workout] = relationship("Workout", backref="sets")
 
     user_id: UUID = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    user: User = relationship("User", backref="sets")
+    user: Mapped[User] = relationship("User", backref="sets")
