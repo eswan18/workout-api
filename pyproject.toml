@@ -9,7 +9,7 @@ authors = ["Ethan Swan <ethanpswan@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11.0"
 fastapi = "^0.78.0"
 uvicorn = {extras = ["standard"], version = "^0.18.2"}
 SQLAlchemy = "^2.0.0"
