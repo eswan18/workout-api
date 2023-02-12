@@ -9,7 +9,7 @@ from ...db import get_db, model_id_exists
 router = APIRouter(prefix="/workout_types")
 
 
-@router.get("/")
+@router.get("/", response_model=list[WorkoutTypeInDB])
 def workout_types(
     db: Session = Depends(get_db),
     current_user: db_models.User = Depends(get_current_user),
