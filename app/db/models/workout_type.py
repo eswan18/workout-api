@@ -11,18 +11,18 @@ from .user import User
 class WorkoutType(Base):
     __tablename__ = "workout_types"
 
-    id: UUID = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name: str = Column(Text, nullable=False)
-    notes: str | None = Column(Text)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = Column(Text, nullable=False)
+    notes = Column(Text, nullable=True)
 
-    parent_workout_type_id: UUID | None = Column(
-        UUID(as_uuid=True), ForeignKey("workout_types.id")
+    parent_workout_type_id = Column(
+        UUID(as_uuid=True), ForeignKey("workout_types.id"), nullable=True
     )
     children: Mapped[list["WorkoutType"]] = relationship(
         "WorkoutType", backref=backref("parent_workout_type", remote_side=[id])
     )
 
-    owner_user_id: UUID | None = Column(
+    owner_user_id = Column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
     )
     user: Mapped[User] = relationship(User, backref="owned_workout_types")

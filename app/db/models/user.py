@@ -9,6 +9,6 @@ from ..database import Base
 class User(Base):
     __tablename__ = "users"
 
-    id: UUID = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    email: str = Column(Text, unique=True, nullable=False)
-    pw_hash: str = Column(Text, nullable=False)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    email = Column(Text, unique=True, nullable=False)
+    pw_hash = Column(Text, nullable=False)

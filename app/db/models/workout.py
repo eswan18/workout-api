@@ -1,5 +1,4 @@
 import uuid
-from datetime import datetime
 
 from sqlalchemy import Column, ForeignKey, DateTime, Text
 from sqlalchemy.dialects.postgresql import UUID
@@ -13,16 +12,16 @@ from .user import User
 class Workout(Base):
     __tablename__ = "workouts"
 
-    id: UUID = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    start_time: datetime | None = Column(DateTime)
-    end_time: datetime | None = Column(DateTime)
-    status: str = Column(Text, nullable=False)
-    notes: str | None = Column(Text)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    start_time = Column(DateTime, nullable=True)
+    end_time = Column(DateTime, nullable=True)
+    status = Column(Text, nullable=False)
+    notes = Column(Text, nullable=True)
 
-    workout_type_id: UUID | None = Column(
-        UUID(as_uuid=True), ForeignKey("workout_types.id")
+    workout_type_id = Column(
+        UUID(as_uuid=True), ForeignKey("workout_types.id"), nullable=True
     )
     workout_type: Mapped[WorkoutType] = relationship("WorkoutType", backref="workouts")
 
-    user_id: UUID = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     user: Mapped[User] = relationship("User", backref="workouts")
