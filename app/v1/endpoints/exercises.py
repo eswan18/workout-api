@@ -15,10 +15,18 @@ def exercises(
     current_user: db_models.User = Depends(get_current_user),
 ) -> list[ExerciseInDB]:
     """
-    Fetch all exercises.
+    Fetch all accessible exercises.
     """
-    result = db.query(db_models.Exercise).all()
-    records = [ExerciseInDB.from_orm(row) for row in result]
+    all_ex = db.query(db_models.Exercise).all()
+
+    # Only return records that are owned by this user or "public", meaning their owner
+    # field is null.
+    def is_public_or_theirs(ex: db_models.Exercise) -> bool:
+        return ex.owner_user_id is None or ex.owner_user_id == current_user.id
+
+    accessible_ex = filter(is_public_or_theirs, all_ex)
+
+    records = [ExerciseInDB.from_orm(row) for row in accessible_ex]
     return records
 
 
