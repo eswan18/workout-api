@@ -7,10 +7,9 @@ from ..database import Base
 from .user import User
 from .workout import Workout
 from .exercise import Exercise
-from .filter_mixin import FilterMixin
 
 
-class Set(Base, FilterMixin):
+class Set(Base):
     __tablename__ = "sets"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)

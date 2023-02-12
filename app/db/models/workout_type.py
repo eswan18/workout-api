@@ -5,10 +5,9 @@ from sqlalchemy.orm import relationship, backref, Mapped
 
 from ..database import Base
 from .user import User
-from .filter_mixin import FilterMixin
 
 
-class WorkoutType(Base, FilterMixin):
+class WorkoutType(Base):
     __tablename__ = "workout_types"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -23,4 +22,4 @@ class WorkoutType(Base, FilterMixin):
     )
 
     owner_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
-    user: Mapped[User] = relationship(User, backref="owned_workout_types")
+    owner: Mapped[User] = relationship(User, backref="owned_workout_types")

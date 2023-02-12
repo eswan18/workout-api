@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 
@@ -11,14 +13,31 @@ router = APIRouter(prefix="/workouts")
 
 @router.get("/", response_model=list[WorkoutInDB])
 def workouts(
+    id: UUID | None = None,
+    status: str | None = None,
+    workout_type_id: UUID | None = None,
     db: Session = Depends(get_db),
     current_user: db_models.User = Depends(get_current_user),
 ) -> list[WorkoutInDB]:
     """
     Fetch all the workouts for your user.
+
+    Not yet implemented: filtering by workout time. That'll be tricky since it needs to
+    support gt/lt, not just equality.
     """
     query = db.query(db_models.Workout)
+
+    # Filters
+    eq_filters = {"id": id, "status": status, "workout_type_id": workout_type_id}
+    # Ignore any that weren't provided.
+    eq_filters = {
+        key: value for (key, value) in eq_filters.items() if value is not None
+    }
+    query = query.filter_by(**eq_filters)
+
+    # Permissions
     query = query.filter_by(user=current_user)
+
     result = query.all()
     records = [WorkoutInDB.from_orm(row) for row in result]
     return records

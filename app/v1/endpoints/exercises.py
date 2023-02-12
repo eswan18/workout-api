@@ -22,19 +22,27 @@ def exercises(
     """
     Fetch all accessible exercises.
     """
+    query = db.query(db_models.Exercise)
+
     # Filters
-    filters = {"id": id, "name": name, "owner_user_id": owner_user_id}
-    all_exes = db_models.Exercise.filter(db=db, filters=filters)
+    eq_filters = {"id": id, "name": name, "owner_user_id": owner_user_id}
+    # Ignore any that weren't provided.
+    eq_filters = {
+        key: value for (key, value) in eq_filters.items() if value is not None
+    }
+    query = query.filter_by(**eq_filters)
 
     # Permisions
     # Only return records that are owned by this user or "public", meaning their owner
     # field is null.
-    def is_public_or_theirs(ex: db_models.Exercise) -> bool:
-        return ex.owner_user_id is None or ex.owner_user_id == current_user.id
+    query = query.filter(
+        (db_models.Exercise.owner == None)  # noqa
+        | (db_models.Exercise.owner == current_user)
+    )
 
-    accessible_exes = (ex for ex in all_exes if is_public_or_theirs(ex))
+    results = query.all()
 
-    records = [ExerciseInDB.from_orm(row) for row in accessible_exes]
+    records = [ExerciseInDB.from_orm(row) for row in results]
     return records
 
 

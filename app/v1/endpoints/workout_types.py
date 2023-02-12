@@ -22,19 +22,27 @@ def workout_types(
     """
     Fetch all accessible workout types.
     """
+    query = db.query(db_models.WorkoutType)
+
     # Filters
-    filters = {"id": id, "name": name, "owner_user_id": owner_user_id}
-    results = db_models.WorkoutType.filter(db=db, filters=filters)
+    eq_filters = {"id": id, "name": name, "owner_user_id": owner_user_id}
+    # Ignore any that weren't provided.
+    eq_filters = {
+        key: value for (key, value) in eq_filters.items() if value is not None
+    }
+    query = query.filter_by(**eq_filters)
 
     # Permisions
     # Only return records that are owned by this user or "public", meaning their owner
     # field is null.
-    def is_public_or_theirs(wt: db_models.WorkoutType) -> bool:
-        return wt.owner_user_id is None or wt.owner_user_id == current_user.id
+    query = query.filter(
+        (db_models.WorkoutType.owner == None)  # noqa
+        | (db_models.WorkoutType.owner == current_user)
+    )
 
-    accessible_wts = (wt for wt in results if is_public_or_theirs(wt))
+    results = query.all()
 
-    records = [WorkoutTypeInDB.from_orm(row) for row in accessible_wts]
+    records = [WorkoutTypeInDB.from_orm(row) for row in results]
     return records
 
 
