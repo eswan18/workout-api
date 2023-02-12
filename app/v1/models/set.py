@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 
 class SetIn(BaseModel):
-    start_time: datetime
+    start_time: datetime | None
     weight: float
     weight_unit: str | None
     reps: int | None
