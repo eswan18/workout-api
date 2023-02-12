@@ -5,9 +5,10 @@ from sqlalchemy.orm import relationship, Mapped
 
 from ..database import Base
 from .user import User
+from .filter_mixin import FilterMixin
 
 
-class Exercise(Base):
+class Exercise(Base, FilterMixin):
     __tablename__ = "exercises"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
