@@ -12,7 +12,6 @@ def test_flow(client: TestClient):
     ####################
     # Create a new user.
     ####################
-
     # Email addresses must be unique in the db so we need to add some random chars to
     # avoid collisions every time we rerun this test.
     rand_name = "".join(random.choices(ascii_letters, k=10))
@@ -31,7 +30,6 @@ def test_flow(client: TestClient):
     #########################
     # Log in with these creds
     #########################
-
     # Note that this auth has to be passed as form data for some reason.
     login_creds = {
         "username": user_email,
