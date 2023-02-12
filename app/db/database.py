@@ -5,8 +5,7 @@ from typing import AsyncIterator
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session, DeclarativeMeta
+from sqlalchemy.orm import declarative_base, sessionmaker, Session, DeclarativeMeta
 
 
 DB_URL = os.environ["DATABASE_URL"]
