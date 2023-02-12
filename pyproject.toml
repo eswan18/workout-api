@@ -23,7 +23,7 @@ psycopg2-binary = "^2.9.5"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"
-mypy = "^0.961"
+mypy = "^1.0.0"
 flake8 = "^4.0.1"
 ipython = "^8.10.0"
 black = "^22.6.0"
