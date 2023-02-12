@@ -5,9 +5,10 @@ from sqlalchemy.orm import relationship, backref, Mapped
 
 from ..database import Base
 from .user import User
+from .filter_mixin import FilterMixin
 
 
-class WorkoutType(Base):
+class WorkoutType(Base, FilterMixin):
     __tablename__ = "workout_types"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
