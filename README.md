@@ -28,24 +28,6 @@ poetry run make serve
 ```
 
 
-## Deployment
+## Database Schema
 
-I host this via Railway. Make sure the CLI is installed and then log in:
-
-```bash
-railway login --browserless
-```
-
-The following commands will deploy the current local state of the repo into the specified environment.
-
-### Staging
-
-```bash
-railway up -e staging
-```
-
-### Production
-
-```bash
-railway up -e production
-```
+See here: [link](https://dbdiagram.io/d/63e963d0296d97641d8054fa).
