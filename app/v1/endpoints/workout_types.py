@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -11,20 +13,33 @@ router = APIRouter(prefix="/workout_types")
 
 @router.get("/", response_model=list[WorkoutTypeInDB])
 def workout_types(
+    id: UUID | None = None,
+    name: str | None = None,
+    owner_user_id: UUID | None = None,
     db: Session = Depends(get_db),
     current_user: db_models.User = Depends(get_current_user),
 ) -> list[WorkoutTypeInDB]:
     """
     Fetch all accessible workout types.
     """
-    all_wts: list[db_models.WorkoutType] = db.query(db_models.WorkoutType).all()
+    query = db.query(db_models.WorkoutType)
+    if id is not None:
+        query = query.where(db_models.WorkoutType.id == id)
+    if name is not None:
+        query = query.where(db_models.WorkoutType.name == name)
+    if owner_user_id is not None:
+        query = query.where(db_models.WorkoutType.owner_user_id == owner_user_id)
+    results: list[db_models.WorkoutType] = query.all()
 
+    #############
+    # Permisions
+    #############
     # Only return records that are owned by this user or "public", meaning their owner
     # field is null.
     def is_public_or_theirs(wt: db_models.WorkoutType) -> bool:
         return wt.owner_user_id is None or wt.owner_user_id == current_user.id
 
-    accessible_wts = filter(is_public_or_theirs, all_wts)
+    accessible_wts = (wt for wt in results if is_public_or_theirs(wt))
 
     records = [WorkoutTypeInDB.from_orm(row) for row in accessible_wts]
     return records

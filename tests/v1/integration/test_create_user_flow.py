@@ -54,6 +54,7 @@ def test_flow(client: TestClient):
     # Nothing should come back except "email" and "id" -- we want to be sure no
     # password/creds fields are returned.
     assert set(response_payload.keys()) == {"email", "id"}
+    my_id = response_payload["id"]
 
     ###################################################################################
     # You shouldn't have any personal resources, but should be able to see shared ones.
@@ -76,3 +77,27 @@ def test_flow(client: TestClient):
         assert len(response_payload) > 0
         # Make sure that the owner_user_id field is None -- indicating that these are all "public".
         assert all(wt["owner_user_id"] is None for wt in response_payload)
+    
+    #################################################
+    # Create a new workout type and check it's there.
+    #################################################
+    new_wkt_tp = {
+        'name': 'hard work',
+        'notes': 'pick things up and put em down',
+    }
+    response = client.post('/workout_types/', headers=auth_header, json=new_wkt_tp)
+    assert response.status_code == 201
+    response_payload = response.json()
+    record_id = response_payload["id"]
+    # Fetch all workout types owned by you. Should be just this one.
+    response = client.get('/workout_types/', params={'owner_user_id': my_id}, headers=auth_header)
+    assert response.status_code == 200
+    response_payload = response.json()
+    assert isinstance(response_payload, list)
+    assert len(response_payload) == 1
+    record = response_payload[0]
+    assert record == new_wkt_tp | {
+        'id': record_id,
+        'owner_user_id': my_id,
+        'parent_workout_type_id': None,
+    }
