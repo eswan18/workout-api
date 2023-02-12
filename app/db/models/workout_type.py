@@ -1,7 +1,6 @@
 import uuid
 
-from sqlalchemy import Column, ForeignKey, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, ForeignKey, Text, UUID
 from sqlalchemy.orm import relationship, backref, Mapped
 
 from ..database import Base
