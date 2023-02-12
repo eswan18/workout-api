@@ -40,6 +40,7 @@ def create_exercise(
     Create a new exercise.
     """
     exercise_record = db_models.Exercise(**exercise.dict())
+    exercise_record.owner_user_id = current_user.id
     db.add(exercise_record)
     db.commit()
     db.refresh(exercise_record)

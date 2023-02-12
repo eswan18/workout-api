@@ -49,6 +49,7 @@ def create_workout_type(
             )
 
     workout_type_record = db_models.WorkoutType(**workout_type.dict())
+    workout_type_record.owner_user_id = current_user.id
     db.add(workout_type_record)
     db.commit()
     db.refresh(workout_type_record)
