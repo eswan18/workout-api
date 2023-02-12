@@ -24,11 +24,11 @@ def workout_types(
     """
     query = db.query(db_models.WorkoutType)
     if id is not None:
-        query = query.where(db_models.WorkoutType.id == id)
+        query = query.filter_by(id=id)
     if name is not None:
-        query = query.where(db_models.WorkoutType.name == name)
+        query = query.filter_by(name=name)
     if owner_user_id is not None:
-        query = query.where(db_models.WorkoutType.owner_user_id == owner_user_id)
+        query = query.filter_by(owner_user_id=owner_user_id)
     results: list[db_models.WorkoutType] = query.all()
 
     #############

@@ -24,11 +24,11 @@ def exercises(
     """
     query = db.query(db_models.Exercise)
     if id is not None:
-        query = query.where(db_models.Exercise.id == id)
+        query = query.filter_by(id=id)
     if name is not None:
-        query = query.where(db_models.Exercise.name == name)
+        query = query.filter_by(name=name)
     if owner_user_id is not None:
-        query = query.where(db_models.Exercise.owner_user_id == owner_user_id)
+        query = query.filter_by(owner_user_id=owner_user_id)
     print(query)
     all_exes: list[db_models.Exercise] = query.all()
 
