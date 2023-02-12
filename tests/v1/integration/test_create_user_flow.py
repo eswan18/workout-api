@@ -56,6 +56,21 @@ def test_flow(client: TestClient):
     # Nothing should come back except "email" and "id" -- we want to be sure no password/creds fields are returned.
     assert set(response_payload.keys()) == {"email", "id"}
 
-    ##############################################
-    # List your resources, all of which are empty.
-    ##############################################
+    ###################################################################################
+    # You shouldn't have any personal resources, but should be able to see shared ones.
+    ###################################################################################
+    personal_resource_endpoints = ["/sets/", "/workouts/"]
+    for endpoint in personal_resource_endpoints:
+        response = client.get(endpoint, headers=auth_header)
+        assert response.status_code == 200
+        response_payload = response.json()
+        assert response_payload == []
+    # There should be *some* resources returned in these cases, but none owned by you.
+    shared_resource_endpoints = ["/exercises/", "/workout_types/"]
+    for endpoint in shared_resource_endpoints:
+        # There should be *some* resources returned in these cases, but none owned by you.
+        response = client.get(endpoint, headers=auth_header)
+        assert response.status_code == 200
+        response_payload = response.json()
+        assert isinstance(response_payload, list)
+        assert len(response_payload) > 0
