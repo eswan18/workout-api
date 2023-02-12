@@ -17,7 +17,9 @@ def sets(
     """
     Fetch all the sets for your user.
     """
-    result = db.query(db_models.Set).filter_by(user=current_user).all()
+    query = db.query(db_models.Set)
+    query = query.filter_by(user=current_user)
+    result = query.all()
     records = [SetInDB.from_orm(row) for row in result]
     return records
 

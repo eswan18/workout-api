@@ -21,14 +21,10 @@ class Set(Base):
     seconds = Column(Integer, nullable=True)
     notes = Column(Text, nullable=True)
 
-    exercise_id = Column(
-        UUID(as_uuid=True), ForeignKey("exercises.id"), nullable=False
-    )
+    exercise_id = Column(UUID(as_uuid=True), ForeignKey("exercises.id"), nullable=False)
     exercise: Mapped[Exercise] = relationship("Exercise", backref="sets")
 
-    workout_id = Column(
-        UUID(as_uuid=True), ForeignKey("workouts.id"), nullable=False
-    )
+    workout_id = Column(UUID(as_uuid=True), ForeignKey("workouts.id"), nullable=False)
     workout: Mapped[Workout] = relationship("Workout", backref="sets")
 
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)

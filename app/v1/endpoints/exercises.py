@@ -29,7 +29,6 @@ def exercises(
         query = query.filter_by(name=name)
     if owner_user_id is not None:
         query = query.filter_by(owner_user_id=owner_user_id)
-    print(query)
     all_exes: list[db_models.Exercise] = query.all()
 
     #############

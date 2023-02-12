@@ -20,7 +20,9 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def get_user_by_email(db: Session, email: str) -> db_models.User:
-    user = db.query(db_models.User).filter_by(email=email).first()
+    query = db.query(db_models.User)
+    query = query.filter_by(email=email)
+    user = query.first()
     if user is None:
         raise ValueError(f"User with email '{email}' does not exist")
     return user

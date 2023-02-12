@@ -17,7 +17,9 @@ def workouts(
     """
     Fetch all the workouts for your user.
     """
-    result = db.query(db_models.Workout).filter_by(user=current_user).all()
+    query = db.query(db_models.Workout)
+    query = query.filter_by(user=current_user)
+    result = query.all()
     records = [WorkoutInDB.from_orm(row) for row in result]
     return records
 

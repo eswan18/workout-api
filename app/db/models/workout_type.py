@@ -22,7 +22,5 @@ class WorkoutType(Base):
         "WorkoutType", backref=backref("parent_workout_type", remote_side=[id])
     )
 
-    owner_user_id = Column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
-    )
+    owner_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     user: Mapped[User] = relationship(User, backref="owned_workout_types")
