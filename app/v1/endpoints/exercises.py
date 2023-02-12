@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
@@ -11,22 +13,36 @@ router = APIRouter(prefix="/exercises")
 
 @router.get("/", response_model=list[ExerciseInDB])
 def exercises(
+    id: UUID | None = None,
+    name: str | None = None,
+    owner_user_id: UUID | None = None,
     db: Session = Depends(get_db),
     current_user: db_models.User = Depends(get_current_user),
 ) -> list[ExerciseInDB]:
     """
     Fetch all accessible exercises.
     """
-    all_ex = db.query(db_models.Exercise).all()
+    query = db.query(db_models.Exercise)
+    if id is not None:
+        query = query.where(db_models.Exercise.id == id)
+    if name is not None:
+        query = query.where(db_models.Exercise.name == name)
+    if owner_user_id is not None:
+        query = query.where(db_models.Exercise.owner_user_id == owner_user_id)
+    print(query)
+    all_exes: list[db_models.Exercise] = query.all()
 
+    #############
+    # Permisions
+    #############
     # Only return records that are owned by this user or "public", meaning their owner
     # field is null.
     def is_public_or_theirs(ex: db_models.Exercise) -> bool:
         return ex.owner_user_id is None or ex.owner_user_id == current_user.id
 
-    accessible_ex = filter(is_public_or_theirs, all_ex)
+    accessible_exes = (ex for ex in all_exes if is_public_or_theirs(ex))
 
-    records = [ExerciseInDB.from_orm(row) for row in accessible_ex]
+    records = [ExerciseInDB.from_orm(row) for row in accessible_exes]
     return records
 
 
