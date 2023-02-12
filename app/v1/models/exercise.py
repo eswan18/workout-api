@@ -11,6 +11,7 @@ class ExerciseIn(BaseModel):
 
 class ExerciseInDB(ExerciseIn):
     id: UUID
+    owner_user_id: UUID | None
 
     class Config:
         orm_mode = True

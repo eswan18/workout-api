@@ -66,7 +66,7 @@ def test_flow(client: TestClient):
         assert response_payload == []
     # There should be *some* resources returned in these cases, but none owned by you;
     # only "public" ones that have a null owner field.
-    owned_resource_endpoints = ["/workout_types/"]
+    owned_resource_endpoints = ["/exercises/", "/workout_types/"]
     for endpoint in owned_resource_endpoints:
         # There should be *some* resources returned in these cases, but none owned by you.
         response = client.get(endpoint, headers=auth_header)
