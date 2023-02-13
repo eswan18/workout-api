@@ -12,7 +12,7 @@ class SetIn(BaseModel):
     seconds: int | None
     notes: str
     # Relations
-    exercise_id: UUID
+    exercise_type_id: UUID
     workout_id: UUID
 
 

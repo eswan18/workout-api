@@ -37,12 +37,12 @@ def create_set(
     set_dict = set_.dict()
     set_dict["user_id"] = current_user.id
 
-    # Validate that the exercise ID and workout ID are present in the DB.
-    exercise_id = set_dict["exercise_id"]
-    if not model_id_exists(Model=db_models.ExerciseType, id=exercise_id, db=db):
+    # Validate that the exercise type ID and workout ID are present in the DB.
+    exercise_type_id = set_dict["exercise_type_id"]
+    if not model_id_exists(Model=db_models.ExerciseType, id=exercise_type_id, db=db):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"exercise with id {exercise_id} does not exist",
+            detail=f"exercise type with id {exercise_type_id} does not exist",
         )
     workout_id = set_dict["workout_id"]
     if not model_id_exists(Model=db_models.Workout, id=workout_id, db=db):

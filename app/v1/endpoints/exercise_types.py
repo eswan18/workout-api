@@ -20,7 +20,7 @@ def exercise_types(
     current_user: db_models.User = Depends(get_current_user),
 ) -> list[ExerciseTypeInDB]:
     """
-    Fetch all accessible exercises.
+    Fetch all accessible exercise types.
     """
     query = db.query(db_models.ExerciseType)
 
@@ -48,16 +48,16 @@ def exercise_types(
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=ExerciseTypeInDB)
 def create_exercise(
-    exercise: ExerciseTypeIn,
+    exercise_type: ExerciseTypeIn,
     db: Session = Depends(get_db),
     current_user: db_models.User = Depends(get_current_user),
 ) -> db_models.ExerciseType:
     """
-    Create a new exercise.
+    Create a new exercise type.
     """
-    exercise_record = db_models.ExerciseType(**exercise.dict())
-    exercise_record.owner_user_id = current_user.id
-    db.add(exercise_record)
+    exercise_type_record = db_models.ExerciseType(**exercise_type.dict())
+    exercise_type_record.owner_user_id = current_user.id
+    db.add(exercise_type_record)
     db.commit()
-    db.refresh(exercise_record)
-    return exercise_record
+    db.refresh(exercise_type_record)
+    return exercise_type_record
