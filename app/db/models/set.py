@@ -13,7 +13,7 @@ class Set(Base):
     __tablename__ = "sets"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    start_time = Column(DateTime)
+    start_time = Column(DateTime(timezone=True))
     weight = Column(Double, nullable=False)
     weight_unit = Column(Text, nullable=True)
     reps = Column(Integer, nullable=True)

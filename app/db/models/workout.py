@@ -12,8 +12,8 @@ class Workout(Base):
     __tablename__ = "workouts"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    start_time = Column(DateTime, nullable=True)
-    end_time = Column(DateTime, nullable=True)
+    start_time = Column(DateTime(timezone=True), nullable=True)
+    end_time = Column(DateTime(timezone=True), nullable=True)
     status = Column(Text, nullable=False)
     notes = Column(Text, nullable=True)
 
