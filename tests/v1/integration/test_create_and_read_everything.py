@@ -88,7 +88,7 @@ def test_flow(client: TestClient):
     response = client.post("/workout_types/", headers=auth_header, json=new_wkt_tp)
     assert response.status_code == 201
     response_payload = response.json()
-    record_id = response_payload["id"]
+    wkt_tp_id = response_payload["id"]
     # Fetch all workout types owned by you. Should be just this one.
     response = client.get(
         "/workout_types/", params={"owner_user_id": my_id}, headers=auth_header
@@ -99,7 +99,7 @@ def test_flow(client: TestClient):
     assert len(response_payload) == 1
     record = response_payload[0]
     assert record == new_wkt_tp | {
-        "id": record_id,
+        "id": wkt_tp_id,
         "owner_user_id": my_id,
         "parent_workout_type_id": None,
     }
@@ -107,13 +107,13 @@ def test_flow(client: TestClient):
     #################################################
     # Create a new exercise type and check it's there.
     #################################################
-    new_exercise = {
+    new_ex_tp = {
         "name": "toetouches",
     }
-    response = client.post("/exercise_types/", headers=auth_header, json=new_exercise)
+    response = client.post("/exercise_types/", headers=auth_header, json=new_ex_tp)
     assert response.status_code == 201
     response_payload = response.json()
-    record_id = response_payload["id"]
+    ex_tp_id = response_payload["id"]
     # Fetch all exercises owned by you. Should be just this one.
     response = client.get(
         "/exercise_types/", params={"owner_user_id": my_id}, headers=auth_header
@@ -123,9 +123,16 @@ def test_flow(client: TestClient):
     assert isinstance(response_payload, list)
     assert len(response_payload) == 1
     record = response_payload[0]
-    assert record == new_exercise | {
-        "id": record_id,
+    assert record == new_ex_tp | {
+        "id": ex_tp_id,
         "notes": None,
         "number_of_weights": 1,
         "owner_user_id": my_id,
+    }
+
+    ##################################################
+    # Create a new workout and a couple of sets in it.
+    ##################################################
+    new_workout = {
+        
     }
