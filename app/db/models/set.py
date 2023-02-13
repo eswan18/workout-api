@@ -7,7 +7,7 @@ from app.db.database import Base
 from app.db.mixins import ModificationTimesMixin
 from .user import User
 from .workout import Workout
-from .exercise import Exercise
+from .exercise_type import ExerciseType
 
 
 class Set(Base, ModificationTimesMixin):
@@ -21,8 +21,8 @@ class Set(Base, ModificationTimesMixin):
     seconds = Column(Integer, nullable=True)
     notes = Column(Text, nullable=True)
 
-    exercise_id = Column(UUID(as_uuid=True), ForeignKey("exercises.id"), nullable=False)
-    exercise: Mapped[Exercise] = relationship("Exercise", backref="sets")
+    exercise_type_id = Column(UUID(as_uuid=True), ForeignKey("exercise_types.id"), nullable=False)
+    exercise_type: Mapped[ExerciseType] = relationship("ExerciseType", backref="sets")
 
     workout_id = Column(UUID(as_uuid=True), ForeignKey("workouts.id"), nullable=False)
     workout: Mapped[Workout] = relationship("Workout", backref="sets")

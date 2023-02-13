@@ -8,8 +8,8 @@ from app.db.mixins import ModificationTimesMixin
 from .user import User
 
 
-class Exercise(Base, ModificationTimesMixin):
-    __tablename__ = "exercises"
+class ExerciseType(Base, ModificationTimesMixin):
+    __tablename__ = "exercise_types"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(Text, nullable=False)
