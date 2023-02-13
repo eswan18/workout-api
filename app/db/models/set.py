@@ -1,7 +1,7 @@
 import uuid
 
-from sqlalchemy import Column, ForeignKey, Integer, Double, Text, DateTime, UUID
-from sqlalchemy.orm import relationship, Mapped
+from sqlalchemy import ForeignKey, Integer, Double, Text, DateTime, UUID
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.db.database import Base
 from app.db.mixins import ModificationTimesMixin
@@ -13,21 +13,20 @@ from .exercise_type import ExerciseType
 class Set(Base, ModificationTimesMixin):
     __tablename__ = "sets"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    start_time = Column(DateTime(timezone=True))
-    weight = Column(Double, nullable=False)
-    weight_unit = Column(Text, nullable=True)
-    reps = Column(Integer, nullable=True)
-    seconds = Column(Integer, nullable=True)
-    notes = Column(Text, nullable=True)
-
-    exercise_type_id = Column(
+    id = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    start_time = mapped_column(DateTime(timezone=True))
+    weight = mapped_column(Double, nullable=False)
+    weight_unit = mapped_column(Text, nullable=True)
+    reps = mapped_column(Integer, nullable=True)
+    seconds = mapped_column(Integer, nullable=True)
+    notes = mapped_column(Text, nullable=True)
+    # Foreign keys
+    exercise_type_id = mapped_column(
         UUID(as_uuid=True), ForeignKey("exercise_types.id"), nullable=False
     )
+    workout_id = mapped_column(UUID(as_uuid=True), ForeignKey("workouts.id"), nullable=False)
+    user_id = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    # Relationships
     exercise_type: Mapped[ExerciseType] = relationship("ExerciseType", backref="sets")
-
-    workout_id = Column(UUID(as_uuid=True), ForeignKey("workouts.id"), nullable=False)
     workout: Mapped[Workout] = relationship("Workout", backref="sets")
-
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     user: Mapped[User] = relationship("User", backref="sets")

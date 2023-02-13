@@ -1,7 +1,7 @@
 import uuid
 
-from sqlalchemy import Column, ForeignKey, Integer, Text, UUID
-from sqlalchemy.orm import relationship, Mapped
+from sqlalchemy import ForeignKey, Integer, Text, UUID
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.db.database import Base
 from app.db.mixins import ModificationTimesMixin
@@ -11,10 +11,11 @@ from .user import User
 class ExerciseType(Base, ModificationTimesMixin):
     __tablename__ = "exercise_types"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name = Column(Text, nullable=False)
-    number_of_weights = Column(Integer, default=1, nullable=False)
-    notes = Column(Text, nullable=True)
-
-    owner_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    id = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = mapped_column(Text, nullable=False)
+    number_of_weights = mapped_column(Integer, default=1, nullable=False)
+    notes = mapped_column(Text, nullable=True)
+    # Foreign keys
+    owner_user_id = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    # Relationships
     owner: Mapped[User] = relationship(User, backref="owned_exercises")
