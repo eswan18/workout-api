@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timezone
 from string import ascii_letters
 import random
 
@@ -134,5 +135,39 @@ def test_flow(client: TestClient):
     # Create a new workout and a couple of sets in it.
     ##################################################
     new_workout = {
-        
+        "start_time": datetime(
+            year=2023,
+            month=1,
+            day=1,
+            hour=9,
+            minute=30,
+            second=0,
+            tzinfo=timezone.utc,
+        ).isoformat(),
+        "end_time": datetime(
+            year=2023,
+            month=1,
+            day=1,
+            hour=10,
+            minute=15,
+            second=0,
+            tzinfo=timezone.utc,
+        ).isoformat(),
+        "status": "in progress",
+        "workout_type_id": wkt_tp_id,
+    }
+    response = client.post("/workouts/", headers=auth_header, json=new_workout)
+    assert response.status_code == 201
+    response_payload = response.json()
+    wkt_id = response_payload["id"]
+    # Fetch all workouts owned by you -- should be just this one.
+    response = client.get("/workouts/", headers=auth_header, params={"user_id": my_id})
+    assert response.status_code == 200
+    response_payload = response.json()
+    assert len(response_payload) == 1
+    record = response_payload[0]
+    assert record == new_workout | {
+        "id": wkt_id,
+        "user_id": my_id,
+        "notes": None,
     }
