@@ -5,13 +5,15 @@ from typing import AsyncIterator
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
-from sqlalchemy.orm import declarative_base, sessionmaker, Session, DeclarativeMeta
+from sqlalchemy.orm import DeclarativeBase, sessionmaker, Session, DeclarativeMeta
 
 
 DB_URL = os.environ["DATABASE_URL"]
 db_url = DB_URL.replace("postgres://", "postgresql://")
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    pass
 
 
 @cache
