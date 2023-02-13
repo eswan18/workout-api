@@ -39,7 +39,7 @@ def create_set(
 
     # Validate that the exercise ID and workout ID are present in the DB.
     exercise_id = set_dict["exercise_id"]
-    if not model_id_exists(Model=db_models.Exercise, id=exercise_id, db=db):
+    if not model_id_exists(Model=db_models.ExerciseType, id=exercise_id, db=db):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"exercise with id {exercise_id} does not exist",

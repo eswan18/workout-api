@@ -67,7 +67,7 @@ def test_flow(client: TestClient):
         assert response_payload == []
     # There should be *some* resources returned in these cases, but none owned by you;
     # only "public" ones that have a null owner field.
-    owned_resource_endpoints = ["/exercises/", "/workout_types/"]
+    owned_resource_endpoints = ["/exercise_types/", "/workout_types/"]
     for endpoint in owned_resource_endpoints:
         # There should be *some* resources returned in these cases, but none owned by you.
         response = client.get(endpoint, headers=auth_header)
@@ -110,13 +110,13 @@ def test_flow(client: TestClient):
     new_exercise = {
         "name": "toetouches",
     }
-    response = client.post("/exercises/", headers=auth_header, json=new_exercise)
+    response = client.post("/exercise_types/", headers=auth_header, json=new_exercise)
     assert response.status_code == 201
     response_payload = response.json()
     record_id = response_payload["id"]
     # Fetch all exercises owned by you. Should be just this one.
     response = client.get(
-        "/exercises/", params={"owner_user_id": my_id}, headers=auth_header
+        "/exercise_types/", params={"owner_user_id": my_id}, headers=auth_header
     )
     assert response.status_code == 200
     response_payload = response.json()
