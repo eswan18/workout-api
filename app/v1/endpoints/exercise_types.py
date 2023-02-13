@@ -8,11 +8,11 @@ from ..auth import get_current_user
 from ...db import models as db_models
 from ...db import get_db
 
-router = APIRouter(prefix="/exercises_types")
+router = APIRouter(prefix="/exercise_types")
 
 
 @router.get("/", response_model=list[ExerciseTypeInDB])
-def exercises_types(
+def exercise_types(
     id: UUID | None = None,
     name: str | None = None,
     owner_user_id: UUID | None = None,
