@@ -1,4 +1,4 @@
-INSERT INTO exercises (id, name, number_of_weights, notes, owner_user_id) VALUES
+INSERT INTO exercise_types (id, name, number_of_weights, notes, owner_user_id) VALUES
 ('8278d21c-1ffa-4dbf-b5b0-070cdb7824cd', 'Bicep Curls', 2, NULL, NULL),
 ('5d4d6ef0-5e14-4506-8525-87d3b1903568', 'Seated rows', 1, '(machine)', NULL),
 ('1624bfc4-e191-49c7-8173-118058570ac0', 'Barbell Squats', 1, 'Just the normal ones, not front squats', NULL),

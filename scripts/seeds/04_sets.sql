@@ -1,4 +1,4 @@
-INSERT INTO sets (id, start_time, weight, weight_unit, reps, seconds, notes, exercise_id, workout_id, user_id) VALUES
+INSERT INTO sets (id, start_time, weight, weight_unit, reps, seconds, notes, exercise_type_id, workout_id, user_id) VALUES
 -- Pull day by dummy user
 -- -- Bicep curls
 ('a8d26bbc-c6af-4d85-b019-82096b1a21af', '2022-01-01 00:00:00', 35, 'lbs', 8, NULL, NULL, '8278d21c-1ffa-4dbf-b5b0-070cdb7824cd', 'a8d26bbc-c6af-4d85-b019-82096b1a21af', 'ddf909e8-1ef9-4cdc-8476-732137a352d8'),
