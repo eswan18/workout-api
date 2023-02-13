@@ -10,7 +10,7 @@ class SetIn(BaseModel):
     weight_unit: str | None
     reps: int | None
     seconds: int | None
-    notes: str
+    notes: str | None
     # Relations
     exercise_type_id: UUID
     workout_id: UUID
