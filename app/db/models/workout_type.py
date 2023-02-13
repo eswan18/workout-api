@@ -18,7 +18,9 @@ class WorkoutType(Base, ModificationTimesMixin):
     parent_workout_type_id = mapped_column(
         UUID(as_uuid=True), ForeignKey("workout_types.id"), nullable=True
     )
-    owner_user_id = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    owner_user_id = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
+    )
     # Relationships
     children: Mapped[list["WorkoutType"]] = relationship(
         "WorkoutType", backref=backref("parent_workout_type", remote_side=[id])

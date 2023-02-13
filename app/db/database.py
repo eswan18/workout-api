@@ -5,7 +5,7 @@ from typing import AsyncIterator
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine.base import Engine
-from sqlalchemy.orm import DeclarativeBase, sessionmaker, Session, DeclarativeMeta
+from sqlalchemy.orm import DeclarativeBase, sessionmaker, Session
 
 
 DB_URL = os.environ["DATABASE_URL"]
@@ -36,10 +36,13 @@ async def get_db() -> AsyncIterator[Session]:
 
 
 def model_id_exists(
-    Model: DeclarativeMeta,
+    Model: type[Base],
     id: str | UUID,
     db: Session,
 ) -> bool:
+    """
+    Check whether an ID exists for a particular model in the DB.
+    """
     first_instance = db.query(Model.id).filter_by(id=id).first()  # type: ignore
     if first_instance is None:
         return False

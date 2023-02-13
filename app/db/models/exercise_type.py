@@ -16,6 +16,8 @@ class ExerciseType(Base, ModificationTimesMixin):
     number_of_weights = mapped_column(Integer, default=1, nullable=False)
     notes = mapped_column(Text, nullable=True)
     # Foreign keys
-    owner_user_id = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    owner_user_id = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
+    )
     # Relationships
     owner: Mapped[User] = relationship(User, backref="owned_exercises")

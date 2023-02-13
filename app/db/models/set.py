@@ -24,7 +24,9 @@ class Set(Base, ModificationTimesMixin):
     exercise_type_id = mapped_column(
         UUID(as_uuid=True), ForeignKey("exercise_types.id"), nullable=False
     )
-    workout_id = mapped_column(UUID(as_uuid=True), ForeignKey("workouts.id"), nullable=False)
+    workout_id = mapped_column(
+        UUID(as_uuid=True), ForeignKey("workouts.id"), nullable=False
+    )
     user_id = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     # Relationships
     exercise_type: Mapped[ExerciseType] = relationship("ExerciseType", backref="sets")
