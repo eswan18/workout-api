@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 
 class WorkoutIn(BaseModel):
-    start_time: datetime
+    start_time: datetime | None
     end_time: datetime | None
     status: str
     notes: str | None
