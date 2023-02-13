@@ -14,14 +14,14 @@ class WorkoutType(Base, ModificationTimesMixin):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-    name: Mapped[str] = mapped_column(Text, nullable=False)
-    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    name: Mapped[str] = mapped_column(Text)
+    notes: Mapped[str | None] = mapped_column(Text)
     # Foreign keys
     parent_workout_type_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("workout_types.id"), nullable=True
+        UUID(as_uuid=True), ForeignKey("workout_types.id")
     )
     owner_user_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
+        UUID(as_uuid=True), ForeignKey("users.id")
     )
     # Relationships
     children: Mapped[list["WorkoutType"]] = relationship(

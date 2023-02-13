@@ -16,20 +16,16 @@ class Workout(Base, ModificationTimesMixin):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-    start_time: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
-    end_time: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
-    status: Mapped[str] = mapped_column(Text, nullable=False)
-    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    start_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    end_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    status: Mapped[str] = mapped_column(Text)
+    notes: Mapped[str | None] = mapped_column(Text)
     # Foreign keys
     workout_type_id: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("workout_types.id"), nullable=True
+        UUID(as_uuid=True), ForeignKey("workout_types.id")
     )
     user_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False
+        UUID(as_uuid=True), ForeignKey("users.id")
     )
     # Relationships
     workout_type: Mapped[WorkoutType] = relationship("WorkoutType", backref="workouts")
