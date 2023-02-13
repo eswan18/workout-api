@@ -3,13 +3,14 @@ import uuid
 from sqlalchemy import Column, ForeignKey, Integer, Double, Text, DateTime, UUID
 from sqlalchemy.orm import relationship, Mapped
 
-from ..database import Base
+from app.db.database import Base
+from app.db.mixins import ModificationTimesMixin
 from .user import User
 from .workout import Workout
 from .exercise import Exercise
 
 
-class Set(Base):
+class Set(Base, ModificationTimesMixin):
     __tablename__ = "sets"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
