@@ -11,6 +11,6 @@ seed_files="$here/seeds/*"
 for file in $seed_files; do
     echo ---------------------------
     echo Running seed file $file...
-    psql $db_url -f $file
+    psql $db_url -f $file -v "ON_ERROR_STOP=1"
     echo ...done
 done
