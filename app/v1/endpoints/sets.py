@@ -23,18 +23,17 @@ def sets(
     current_user: db.User = Depends(get_current_user),
 ) -> list[SetInDB]:
     """
-    Fetch all the sets for your user.
+    Fetch sets.
     """
-    query = select(db.Set)
-    query = db.Set.apply_params(
-        query,
+    param_filter = db.Set.param_filter(
         id=id,
         exercise_type_id=exercise_type_id,
         workout_id=workout_id,
         min_start_time=min_start_time,
         max_start_time=max_start_time,
     )
-    query = db.Set.apply_read_permissions(query, user=current_user)
+    readable_filter = db.Set.read_permissions_filter(current_user)
+    query = select(db.Set).where(param_filter & readable_filter)
 
     result = session.scalars(query)
     records = [SetInDB.from_orm(row) for row in result]
