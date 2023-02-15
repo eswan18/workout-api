@@ -171,3 +171,49 @@ def test_flow(client: TestClient):
         "user_id": my_id,
         "notes": None,
     }
+
+    new_sets = [
+        {
+            "start_time": datetime(
+                year=2023,
+                month=1,
+                day=1,
+                hour=9,
+                minute=30,
+                second=0,
+                tzinfo=timezone.utc,
+            ).isoformat(),
+            "weight": 0,
+            "seconds": 60,
+            "exercise_type_id": ex_tp_id,
+            "workout_id": wkt_id,
+        },
+        {
+            "start_time": datetime(
+                year=2023,
+                month=1,
+                day=1,
+                hour=9,
+                minute=31,
+                second=0,
+                tzinfo=timezone.utc,
+            ).isoformat(),
+            "weight": 0,
+            "seconds": 58,
+            "exercise_type_id": ex_tp_id,
+            "workout_id": wkt_id,
+        },
+    ]
+
+    set_ids = []
+    for new_set in new_sets:
+        response = client.post("/sets/", headers=auth_header, json=new_set)
+        assert response.status_code == 201
+        response_payload = response.json()
+        set_ids.append(response_payload["id"])
+    # Fetch them
+    response = client.get("/sets", headers=auth_header, params={"user_id": my_id})
+    assert response.status_code == 200
+    response_payload = response.json()
+    assert len(response_payload) == 2
+    assert set(record["id"] for record in response_payload) == set(set_ids)
