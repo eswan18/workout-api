@@ -20,13 +20,13 @@ def exercise_types(
     current_user: db.User = Depends(get_current_user),
 ) -> list[ExerciseTypeInDB]:
     """
-    Fetch all accessible exercise types.
+    Fetch exercise types.
     """
-    query = select(db.ExerciseType)
-    query = db.ExerciseType.apply_params(
-        query, id=id, name=name, owner_user_id=owner_user_id
+    param_filter = db.ExerciseType.param_filter(
+        id=id, name=name, owner_user_id=owner_user_id
     )
-    query = db.ExerciseType.apply_read_permissions(query, current_user)
+    readable_filter = db.ExerciseType.read_permissions_filter(current_user)
+    query = select(db.ExerciseType).where(param_filter & readable_filter)
 
     result = session.scalars(query)
     records = [ExerciseTypeInDB.from_orm(ex_tp) for ex_tp in result]

@@ -1,10 +1,9 @@
-from typing import Self
 import uuid
 from datetime import datetime
 
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.types import DateTime, Text, UUID
-from sqlalchemy.sql import Select
+from sqlalchemy.sql.elements import ColumnElement, and_
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.db.database import Base
@@ -35,9 +34,8 @@ class Workout(Base, ModificationTimesMixin):
     user: Mapped[User] = relationship("User", backref="workouts")
 
     @classmethod
-    def apply_params(
+    def param_filter(
         cls,
-        query: Select[tuple[Self]],
         *,
         id: uuid.UUID | None = None,
         status: str | None = None,
@@ -47,32 +45,31 @@ class Workout(Base, ModificationTimesMixin):
         max_start_time: datetime | None = None,
         min_end_time: datetime | None = None,
         max_end_time: datetime | None = None,
-    ) -> Select[tuple[Self]]:
+    ) -> ColumnElement[bool]:
+        """Build a filter over user-supplied parameters"""
+        f = and_(True)  # Wrapping True in `and_` helps with typing issues.
         if id is not None:
-            query = query.where(cls.id == id)
+            f = and_(f, cls.id == id)
         if status is not None:
-            query = query.where(cls.status == status)
+            f = and_(f, cls.status == status)
         if workout_type_id is not None:
-            query = query.where(cls.workout_type_id == workout_type_id)
+            f = and_(cls.workout_type_id == workout_type_id)
         if user_id is not None:
-            query = query.where(cls.user_id == user_id)
+            f = and_(f, cls.user_id == user_id)
         if min_start_time is not None:
-            query = query.where(cls.start_time > min_start_time)
+            f = and_(f, cls.start_time > min_start_time)
         if max_start_time is not None:
-            query = query.where(cls.start_time < max_start_time)
+            f = and_(f, cls.start_time < max_start_time)
         if min_end_time is not None:
-            query = query.where(cls.end_time > min_end_time)
+            f = and_(f, cls.end_time > min_end_time)
         if max_end_time is not None:
-            query = query.where(cls.end_time < max_end_time)
-        return query
+            f = and_(f, cls.end_time < max_end_time)
+        return f
 
     @classmethod
-    def apply_read_permissions(
+    def read_permissions_filter(
         cls,
-        query: Select[tuple[Self]],
         user: User,
-    ) -> Select[tuple[Self]]:
-        """
-        Limit a query down to only the resources a user has access to read.
-        """
-        return query.where(cls.user == user)
+    ) -> ColumnElement[bool]:
+        """Build a filter for workouts this user can read."""
+        return cls.user == user

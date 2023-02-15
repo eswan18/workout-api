@@ -26,13 +26,8 @@ def workouts(
 ) -> list[WorkoutInDB]:
     """
     Fetch workouts.
-
-    Not yet implemented: filtering by workout time. That'll be tricky since it needs to
-    support gt/lt, not just equality.
     """
-    query = select(db.Workout)
-    query = db.Workout.apply_params(
-        query,
+    param_filter = db.Workout.param_filter(
         id=id,
         status=status,
         workout_type_id=workout_type_id,
@@ -41,7 +36,8 @@ def workouts(
         min_end_time=min_end_time,
         max_end_time=max_end_time,
     )
-    query = db.Workout.apply_read_permissions(query, current_user)
+    permissions_filter = db.Workout.read_permissions_filter(current_user)
+    query = select(db.Workout).filter(param_filter & permissions_filter)
 
     result = session.scalars(query)
     records = [WorkoutInDB.from_orm(row) for row in result]
