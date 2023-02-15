@@ -1,7 +1,10 @@
+from typing import Self
 import uuid
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, Integer, Double, Text, DateTime, UUID
+from sqlalchemy.schema import ForeignKey
+from sqlalchemy.types import Integer, Double, Text, DateTime, UUID
+from sqlalchemy.sql import Select
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.db.database import Base
@@ -37,3 +40,40 @@ class Set(Base, ModificationTimesMixin):
     exercise_type: Mapped[ExerciseType] = relationship("ExerciseType", backref="sets")
     workout: Mapped[Workout] = relationship("Workout", backref="sets")
     user: Mapped[User] = relationship("User", backref="sets")
+
+    @classmethod
+    def apply_params(
+        cls,
+        query: Select[tuple[Self]],
+        *,
+        id: uuid.UUID | None = None,
+        exercise_type_id: uuid.UUID | None = None,
+        workout_id: uuid.UUID | None = None,
+        user_id: uuid.UUID | None = None,
+        min_start_time: datetime | None = None,
+        max_start_time: datetime | None = None,
+    ) -> Select[tuple[Self]]:
+        if id is not None:
+            query = query.where(cls.id == id)
+        if exercise_type_id is not None:
+            query = query.where(cls.exercise_type_id == exercise_type_id)
+        if workout_id is not None:
+            query = query.where(cls.workout_id == workout_id)
+        if user_id is not None:
+            query = query.where(cls.user_id == user_id)
+        if min_start_time is not None:
+            query = query.where(cls.start_time > min_start_time)
+        if max_start_time is not None:
+            query = query.where(cls.start_time < max_start_time)
+        return query
+
+    @classmethod
+    def apply_read_permissions(
+        cls,
+        query: Select[tuple[Self]],
+        user: User,
+    ) -> Select[tuple[Self]]:
+        """
+        Limit a query down to only the resources a user has access to read.
+        """
+        return query.where(cls.user == user)

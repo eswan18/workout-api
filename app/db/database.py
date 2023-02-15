@@ -38,12 +38,12 @@ async def get_db() -> AsyncIterator[Session]:
 def model_id_exists(
     Model: type[Base],
     id: str | UUID,
-    db: Session,
+    session: Session,
 ) -> bool:
     """
     Check whether an ID exists for a particular model in the DB.
     """
-    first_instance = db.query(Model.id).filter_by(id=id).first()  # type: ignore
+    first_instance = session.query(Model.id).filter_by(id=id).first()  # type: ignore
     if first_instance is None:
         return False
     else:

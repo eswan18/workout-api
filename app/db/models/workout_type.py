@@ -50,12 +50,14 @@ class WorkoutType(Base, ModificationTimesMixin):
         return query
 
     @classmethod
-    def apply_permissions(
+    def apply_read_permissions(
         cls,
         query: Select[tuple[Self]],
         user: User,
     ) -> Select[tuple[Self]]:
         """
-        Limit a query down to only the resources a user has access to.
+        Limit a query down to only the resources a user has access to read.
         """
+        # Users can access workout types that they own or that are public, denoted as a
+        # null value in owner_user_id.
         return query.filter((cls.owner == None) | (cls.owner == user))  # noqa

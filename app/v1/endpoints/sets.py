@@ -1,25 +1,42 @@
+from uuid import UUID
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.sql import select
 from sqlalchemy.orm import Session
 
 from ..models.set import SetIn, SetInDB
 from ..auth import get_current_user
-from ...db import models as db_models
-from ...db import get_db, model_id_exists
+from app import db
 
 router = APIRouter(prefix="/sets")
 
 
 @router.get("/")
 def sets(
-    db: Session = Depends(get_db),
-    current_user: db_models.User = Depends(get_current_user),
+    id: UUID | None = None,
+    exercise_type_id: UUID | None = None,
+    workout_id: UUID | None = None,
+    min_start_time: datetime | None = None,
+    max_start_time: datetime | None = None,
+    session: Session = Depends(db.get_db),
+    current_user: db.User = Depends(get_current_user),
 ) -> list[SetInDB]:
     """
     Fetch all the sets for your user.
     """
-    query = select(db_models.Set).filter_by(user=current_user)
-    result = db.scalars(query)
+    query = select(db.Set)
+    query = db.Set.apply_params(
+        query,
+        id=id,
+        exercise_type_id=exercise_type_id,
+        workout_id=workout_id,
+        min_start_time=min_start_time,
+        max_start_time=max_start_time,
+    )
+    query = db.Set.apply_read_permissions(query, user=current_user)
+
+    result = session.scalars(query)
     records = [SetInDB.from_orm(row) for row in result]
     return records
 
@@ -27,9 +44,9 @@ def sets(
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=SetInDB)
 def create_set(
     set_: SetIn,
-    db: Session = Depends(get_db),
-    current_user: db_models.User = Depends(get_current_user),
-) -> db_models.Set:
+    session: Session = Depends(db.get_db),
+    current_user: db.User = Depends(get_current_user),
+) -> db.Set:
     """
     Record a new set.
     """
@@ -39,20 +56,22 @@ def create_set(
 
     # Validate that the exercise type ID and workout ID are present in the DB.
     exercise_type_id = set_dict["exercise_type_id"]
-    if not model_id_exists(Model=db_models.ExerciseType, id=exercise_type_id, db=db):
+    if not db.model_id_exists(
+        Model=db.ExerciseType, id=exercise_type_id, session=session
+    ):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"exercise type with id {exercise_type_id} does not exist",
         )
     workout_id = set_dict["workout_id"]
-    if not model_id_exists(Model=db_models.Workout, id=workout_id, db=db):
+    if not db.model_id_exists(Model=db.Workout, id=workout_id, session=session):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"workout with id {workout_id} does not exist",
         )
 
-    set_record = db_models.Set(**set_dict)
-    db.add(set_record)
-    db.commit()
-    db.refresh(set_record)
+    set_record = db.Set(**set_dict)
+    session.add(set_record)
+    session.commit()
+    session.refresh(set_record)
     return set_record

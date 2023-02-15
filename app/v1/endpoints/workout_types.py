@@ -26,7 +26,7 @@ def workout_types(
     query = db.WorkoutType.apply_params(
         query=query, id=id, name=name, owner_user_id=owner_user_id
     )
-    query = db.WorkoutType.apply_permissions(query, current_user)
+    query = db.WorkoutType.apply_read_permissions(query, current_user)
 
     result = session.scalars(query)
     records = [WorkoutTypeInDB.from_orm(row) for row in result]
@@ -45,7 +45,7 @@ def create_workout_type(
     # Make sure that the parent workout type ID, if included, is in the DB.
     parent_id = workout_type.parent_workout_type_id
     if parent_id is not None:
-        if not db.model_id_exists(Model=db.WorkoutType, id=parent_id, db=session):
+        if not db.model_id_exists(Model=db.WorkoutType, id=parent_id, session=session):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"workout type with id {parent_id} does not exist",

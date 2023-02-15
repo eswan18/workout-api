@@ -60,7 +60,9 @@ def create_workout(
     # Validate that the workout_type_id, if included, is present in the DB.
     workout_type_id = workout_dict["workout_type_id"]
     if workout_type_id is not None:
-        if not model_id_exists(Model=db_models.WorkoutType, id=workout_type_id, db=db):
+        if not model_id_exists(
+            Model=db_models.WorkoutType, id=workout_type_id, session=db
+        ):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"workout type with id {workout_type_id} does not exist",
