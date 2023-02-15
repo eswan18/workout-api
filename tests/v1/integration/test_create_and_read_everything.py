@@ -206,11 +206,10 @@ def test_flow(client: TestClient):
     ]
 
     set_ids = []
-    for new_set in new_sets:
-        response = client.post("/sets/", headers=auth_header, json=new_set)
-        assert response.status_code == 201
-        response_payload = response.json()
-        set_ids.append(response_payload["id"])
+    response = client.post("/sets/", headers=auth_header, json=new_sets)
+    assert response.status_code == 201
+    response_payload = response.json()
+    set_ids = [p["id"] for p in response_payload]
     # Fetch them
     response = client.get("/sets", headers=auth_header, params={"user_id": my_id})
     assert response.status_code == 200

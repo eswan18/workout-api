@@ -12,8 +12,8 @@ from app import db
 router = APIRouter(prefix="/sets")
 
 
-@router.get("/")
-def sets(
+@router.get("/", response_model=list[SetInDB])
+def read_sets(
     id: UUID | None = None,
     exercise_type_id: UUID | None = None,
     workout_id: UUID | None = None,
@@ -21,7 +21,7 @@ def sets(
     max_start_time: datetime | None = None,
     session: Session = Depends(db.get_db),
     current_user: db.User = Depends(get_current_user),
-) -> list[SetInDB]:
+) -> list[db.Set]:
     """
     Fetch sets.
     """
@@ -40,37 +40,21 @@ def sets(
     return records
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=SetInDB)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=list[SetInDB])
 def create_set(
-    set_: SetIn,
+    set_: SetIn | list[SetIn],
     session: Session = Depends(db.get_db),
     current_user: db.User = Depends(get_current_user),
-) -> db.Set:
+) -> list[db.Set]:
     """
-    Record a new set.
+    Create a new set or sets.
     """
-    # Add the current user's ID to the record.
-    set_dict = set_.dict()
-    set_dict["user_id"] = current_user.id
+    if not isinstance(set_, list):
+        sets = [set_]
+    else:
+        sets = set_
 
-    # Validate that the exercise type ID and workout ID are present in the DB.
-    exercise_type_id = set_dict["exercise_type_id"]
-    if not db.model_id_exists(
-        Model=db.ExerciseType, id=exercise_type_id, session=session
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"exercise type with id {exercise_type_id} does not exist",
-        )
-    workout_id = set_dict["workout_id"]
-    if not db.model_id_exists(Model=db.Workout, id=workout_id, session=session):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"workout with id {workout_id} does not exist",
-        )
-
-    set_record = db.Set(**set_dict)
-    session.add(set_record)
+    records = [db.Set(**s.dict(), user_id=current_user.id) for s in sets]
+    session.add_all(records)
     session.commit()
-    session.refresh(set_record)
-    return set_record
+    return records

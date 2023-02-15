@@ -72,5 +72,21 @@ class Set(Base, ModificationTimesMixin):
         cls,
         user: User,
     ) -> ColumnElement[bool]:
-        """Build a filter for exercise types this user can read."""
+        """Build a filter for sets this user can read."""
+        return cls.user == user
+    
+    @classmethod
+    def update_permissions_filter(
+        cls,
+        user: User,
+    ) -> ColumnElement[bool]:
+        """Build a filter for sets this user can update."""
+        return cls.user == user
+
+    @classmethod
+    def delete_permissions_filter(
+        cls,
+        user: User,
+    ) -> ColumnElement[bool]:
+        """Build a filter for sets this user can delete."""
         return cls.user == user

@@ -25,7 +25,7 @@ async def get_db() -> AsyncIterator[Session]:
     engine = get_engine()
     SessionLocal = sessionmaker(
         autocommit=False,
-        autoflush=False,
+        autoflush=True,
         bind=engine,
     )
     db = SessionLocal()
