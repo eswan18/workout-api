@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.sql import select
 from sqlalchemy.orm import Session
 
-from ..models.exercise_type import ExerciseTypeInDB, ExerciseTypeIn
-from ..auth import get_current_user
+from app.v1.models.exercise_type import ExerciseTypeInDB, ExerciseTypeIn
+from app.v1.auth import get_current_user
 from app import db
 
 router = APIRouter(prefix="/exercise_types")

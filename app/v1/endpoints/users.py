@@ -8,7 +8,7 @@ from ..models.user import UserIn, UserOut
 from ..auth import get_current_user
 from ...db import models as db_models
 from ...db import get_db
-from ..auth import hash_pw
+from app.v1.auth import hash_pw
 
 USER_CREATION_SECRET = os.environ["USER_CREATION_SECRET"]
 

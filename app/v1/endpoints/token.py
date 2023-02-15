@@ -2,9 +2,9 @@ from fastapi import Depends, APIRouter, status, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from ..models.token import Token
-from ..auth import authenticate_user, create_token_payload
-from ...db.database import get_db
+from app.v1.models.token import Token
+from app.v1.auth import authenticate_user, create_token_payload
+from app import db
 
 
 router = APIRouter(prefix="/token")
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/token")
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=Token)
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db),
+    db: Session = Depends(db.get_db),
 ) -> dict[str, str]:
     user = authenticate_user(form_data.username, form_data.password, db=db)
     if user is None:
