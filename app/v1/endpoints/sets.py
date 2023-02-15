@@ -38,8 +38,7 @@ def read_sets(
     query = select(db.Set).where(param_filter & readable_filter)
 
     result = session.scalars(query)
-    records = [SetInDB.from_orm(row) for row in result]
-    return records
+    return list(result)
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=list[SetInDB])
