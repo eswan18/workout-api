@@ -26,9 +26,6 @@ def workouts(
 ) -> list[WorkoutInDB]:
     """
     Fetch workouts.
-
-    Not yet implemented: filtering by workout time. That'll be tricky since it needs to
-    support gt/lt, not just equality.
     """
     query = select(db.Workout)
     query = db.Workout.apply_params(

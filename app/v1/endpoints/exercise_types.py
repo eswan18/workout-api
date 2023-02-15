@@ -20,7 +20,7 @@ def exercise_types(
     current_user: db.User = Depends(get_current_user),
 ) -> list[ExerciseTypeInDB]:
     """
-    Fetch all accessible exercise types.
+    Fetch exercise types.
     """
     param_filter = db.ExerciseType.param_filter(
         id=id, name=name, owner_user_id=owner_user_id

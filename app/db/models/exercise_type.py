@@ -50,4 +50,6 @@ class ExerciseType(Base, ModificationTimesMixin):
         user: User,
     ) -> BooleanClauseList:
         """Build a filter for exercise types this user can read."""
+        # Users can access exercise types that they own or that are public, denoted as a
+        # null value in owner_user_id.
         return (cls.owner == user) | (cls.owner == None)

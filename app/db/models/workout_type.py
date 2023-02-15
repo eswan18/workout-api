@@ -1,7 +1,6 @@
 import uuid
-from typing import Self
 
-from sqlalchemy.sql import Select
+from sqlalchemy.sql.elements import ColumnElement, BooleanClauseList, and_
 from sqlalchemy.types import Text, UUID
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.orm import relationship, backref, Mapped, mapped_column
@@ -33,31 +32,29 @@ class WorkoutType(Base, ModificationTimesMixin):
     owner: Mapped[User] = relationship(User, backref="owned_workout_types")
 
     @classmethod
-    def apply_params(
+    def param_filter(
         cls,
-        query: Select[tuple[Self]],
         *,
         id: uuid.UUID | None = None,
         name: str | None = None,
         owner_user_id: uuid.UUID | None = None,
-    ) -> Select[tuple[Self]]:
+    ) -> ColumnElement[bool]:
+        """Build a filter over user-supplied parameters"""
+        f = and_(True)  # Wrapping True in `and_` helps with typing issues.
         if id is not None:
-            query = query.where(cls.id == id)
+            f = and_(f, cls.id == id)
         if name is not None:
-            query = query.where(cls.name == name)
+            f = and_(f, cls.name == name)
         if owner_user_id is not None:
-            query = query.where(cls.owner_user_id == owner_user_id)
-        return query
+            f = and_(f, cls.owner_user_id == owner_user_id)
+        return f
 
     @classmethod
-    def apply_read_permissions(
+    def read_permissions_filter(
         cls,
-        query: Select[tuple[Self]],
         user: User,
-    ) -> Select[tuple[Self]]:
-        """
-        Limit a query down to only the resources a user has access to read.
-        """
+    ) -> BooleanClauseList:
+        """Build a filter for workout types this user can read."""
         # Users can access workout types that they own or that are public, denoted as a
         # null value in owner_user_id.
-        return query.filter((cls.owner == None) | (cls.owner == user))
+        return (cls.owner == user) | (cls.owner == None)

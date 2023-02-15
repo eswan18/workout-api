@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.sql import select
 from sqlalchemy.orm import Session
 
-from ..models.workout_type import WorkoutTypeIn, WorkoutTypeInDB
-from ..auth import get_current_user
+from app.v1.models.workout_type import WorkoutTypeIn, WorkoutTypeInDB
+from app.v1.auth import get_current_user
 from app import db
 
 router = APIRouter(prefix="/workout_types")
@@ -22,11 +22,11 @@ def workout_types(
     """
     Fetch workout types.
     """
-    query = select(db.WorkoutType)
-    query = db.WorkoutType.apply_params(
-        query=query, id=id, name=name, owner_user_id=owner_user_id
+    param_filter = db.WorkoutType.param_filter(
+        id=id, name=name, owner_user_id=owner_user_id
     )
-    query = db.WorkoutType.apply_read_permissions(query, current_user)
+    permissions_filter = db.WorkoutType.read_permissions_filter(current_user)
+    query = select(db.WorkoutType).filter(param_filter & permissions_filter)
 
     result = session.scalars(query)
     records = [WorkoutTypeInDB.from_orm(row) for row in result]
