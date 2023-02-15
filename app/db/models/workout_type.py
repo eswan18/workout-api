@@ -60,4 +60,4 @@ class WorkoutType(Base, ModificationTimesMixin):
         """
         # Users can access workout types that they own or that are public, denoted as a
         # null value in owner_user_id.
-        return query.filter((cls.owner == None) | (cls.owner == user))  # noqa
+        return query.filter((cls.owner == None) | (cls.owner == user))
