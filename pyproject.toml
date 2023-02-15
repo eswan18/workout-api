@@ -33,6 +33,9 @@ httpx = "^0.23.0"
 anyio = "^3.6.1"
 asyncio = "^3.4.3"
 
+[tool.poetry.group.dev.dependencies]
+types-psycopg2 = "^2.9.21.5"
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
