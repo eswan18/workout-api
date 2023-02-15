@@ -1,9 +1,8 @@
 import uuid
-from typing import Self
 
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.types import Integer, Text, UUID
-from sqlalchemy.sql import Select
+from sqlalchemy.sql.elements import BooleanClauseList, ColumnElement, and_
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.db.database import Base
@@ -28,31 +27,27 @@ class ExerciseType(Base, ModificationTimesMixin):
     owner: Mapped[User] = relationship(User, backref="owned_exercises")
 
     @classmethod
-    def apply_params(
+    def param_filter(
         cls,
-        query: Select[tuple[Self]],
         *,
         id: uuid.UUID | None = None,
         name: str | None = None,
         owner_user_id: uuid.UUID | None = None,
-    ) -> Select[tuple[Self]]:
+    ) -> ColumnElement[bool]:
+        """Build a filter over user-supplied parameters"""
+        f = and_(True)  # Wrapping True in `and_` helps with typing issues.
         if id is not None:
-            query = query.filter(cls.id == id)
+            f = and_(f, cls.id == id)
         if name is not None:
-            query = query.filter(cls.name == name)
+            f = and_(cls.name == name)
         if owner_user_id is not None:
-            query = query.filter(cls.owner_user_id == owner_user_id)
-        return query
+            f = and_(cls.owner_user_id == owner_user_id)
+        return f
 
     @classmethod
-    def apply_read_permissions(
+    def read_permissions_filter(
         cls,
-        query: Select[tuple[Self]],
         user: User,
-    ) -> Select[tuple[Self]]:
-        """
-        Limit a query down to only the resources a user has access to read.
-        """
-        # Users can access workout types that they own or that are public, denoted as a
-        # null value in owner_user_id.
-        return query.where((cls.owner == user) | (cls.owner == None))  # noqa
+    ) -> BooleanClauseList:
+        """Build a filter for exercise types this user can read."""
+        return (cls.owner == user) | (cls.owner == None)
