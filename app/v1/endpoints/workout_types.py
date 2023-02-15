@@ -20,7 +20,7 @@ def workout_types(
     current_user: db.User = Depends(get_current_user),
 ) -> list[WorkoutTypeInDB]:
     """
-    Fetch all accessible workout types.
+    Fetch workout types.
     """
     query = select(db.WorkoutType)
     query = db.WorkoutType.apply_params(

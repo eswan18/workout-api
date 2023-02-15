@@ -1,4 +1,5 @@
 from uuid import UUID
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.sql import select
@@ -16,27 +17,31 @@ def workouts(
     id: UUID | None = None,
     status: str | None = None,
     workout_type_id: UUID | None = None,
+    min_start_time: datetime | None = None,
+    max_start_time: datetime | None = None,
+    min_end_time: datetime | None = None,
+    max_end_time: datetime | None = None,
     session: Session = Depends(db.get_db),
     current_user: db.User = Depends(get_current_user),
 ) -> list[WorkoutInDB]:
     """
-    Fetch all the workouts for your user.
+    Fetch workouts.
 
     Not yet implemented: filtering by workout time. That'll be tricky since it needs to
     support gt/lt, not just equality.
     """
     query = select(db.Workout)
-
-    # Filters
-    eq_filters = {"id": id, "status": status, "workout_type_id": workout_type_id}
-    # Ignore any that weren't provided.
-    eq_filters = {
-        key: value for (key, value) in eq_filters.items() if value is not None
-    }
-    query = query.filter_by(**eq_filters)
-
-    # Permissions
-    query = query.filter_by(user=current_user)
+    query = db.Workout.apply_params(
+        query,
+        id=id,
+        status=status,
+        workout_type_id=workout_type_id,
+        min_start_time=min_start_time,
+        max_start_time=max_start_time,
+        min_end_time=min_end_time,
+        max_end_time=max_end_time,
+    )
+    query = db.Workout.apply_read_permissions(query, current_user)
 
     result = session.scalars(query)
     records = [WorkoutInDB.from_orm(row) for row in result]
