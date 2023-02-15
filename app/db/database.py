@@ -35,6 +35,12 @@ async def get_db() -> AsyncIterator[Session]:
         db.close()
 
 
+async def get_session_factory() -> AsyncIterator[sessionmaker[Session]]:
+    engine = get_engine()
+    session_factory = sessionmaker(bind=engine)
+    yield session_factory
+
+
 def model_id_exists(
     Model: type[Base],
     id: str | UUID,

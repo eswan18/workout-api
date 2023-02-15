@@ -74,7 +74,7 @@ class Set(Base, ModificationTimesMixin):
     ) -> ColumnElement[bool]:
         """Build a filter for sets this user can read."""
         return cls.user == user
-    
+
     @classmethod
     def update_permissions_filter(
         cls,

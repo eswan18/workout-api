@@ -3,7 +3,9 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.sql import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.exc import IntegrityError
+from psycopg2.errors import ForeignKeyViolation
 
 from app.v1.models.set import SetIn, SetInDB
 from app.v1.auth import get_current_user
@@ -41,9 +43,9 @@ def read_sets(
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=list[SetInDB])
-def create_set(
+def create_sets(
     set_: SetIn | list[SetIn],
-    session: Session = Depends(db.get_db),
+    session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
     current_user: db.User = Depends(get_current_user),
 ) -> list[db.Set]:
     """
@@ -55,6 +57,18 @@ def create_set(
         sets = set_
 
     records = [db.Set(**s.dict(), user_id=current_user.id) for s in sets]
-    session.add_all(records)
-    session.commit()
+    with session_factory() as session:
+        session.add_all(records)
+        try:
+            session.commit()
+        except IntegrityError as exc:
+            original_error = exc.orig
+            if isinstance(original_error, ForeignKeyViolation):
+                msg = str(original_error)
+            else:
+                msg = str(exc.detail)
+            session.rollback()
+            raise HTTPException(status_code=400, detail=msg)
+        for record in records:
+            session.refresh(record)
     return records
