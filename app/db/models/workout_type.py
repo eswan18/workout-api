@@ -1,6 +1,9 @@
 import uuid
+from typing import Self
 
-from sqlalchemy import ForeignKey, Text, UUID
+from sqlalchemy.sql import Select
+from sqlalchemy.types import Text, UUID
+from sqlalchemy.schema import ForeignKey
 from sqlalchemy.orm import relationship, backref, Mapped, mapped_column
 
 from app.db.database import Base
@@ -28,3 +31,31 @@ class WorkoutType(Base, ModificationTimesMixin):
         "WorkoutType", backref=backref("parent_workout_type", remote_side=[id])
     )
     owner: Mapped[User] = relationship(User, backref="owned_workout_types")
+
+    @classmethod
+    def apply_params(
+        cls,
+        query: Select[tuple[Self]],
+        *,
+        id: uuid.UUID | None = None,
+        name: str | None = None,
+        owner_user_id: uuid.UUID | None = None,
+    ) -> Select[tuple[Self]]:
+        if id is not None:
+            query = query.where(cls.id == id)
+        if name is not None:
+            query = query.where(cls.name == name)
+        if owner_user_id is not None:
+            query = query.where(cls.owner_user_id == owner_user_id)
+        return query
+
+    @classmethod
+    def apply_permissions(
+        cls,
+        query: Select[tuple[Self]],
+        user: User,
+    ) -> Select[tuple[Self]]:
+        """
+        Limit a query down to only the resources a user has access to.
+        """
+        return query.filter((cls.owner == None) | (cls.owner == user))  # noqa
