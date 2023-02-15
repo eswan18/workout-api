@@ -8,8 +8,7 @@ from jose import JWTError, jwt
 from sqlalchemy.sql import select
 from sqlalchemy.orm import Session
 
-from ..db import get_db
-from ..db import models as db_models
+from app import db
 
 
 APP_SECRET = os.environ["APP_SECRET"]
@@ -20,9 +19,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def get_user_by_email(db: Session, email: str) -> db_models.User:
-    query = select(db_models.User).filter_by(email=email)
-    user = db.scalars(query).first()
+def get_user_by_email(session: Session, email: str) -> db.User:
+    query = select(db.User).filter_by(email=email)
+    user = session.scalars(query).first()
     if user is None:
         raise ValueError(f"User with email '{email}' does not exist")
     return user
@@ -38,8 +37,8 @@ def hash_pw(email: str, password: str) -> str:
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db),
-) -> db_models.User:
+    session: Session = Depends(db.get_db),
+) -> db.User:
     """
     Return the user model of the owner of an access token. Raise exception if invalid.
     """
@@ -64,15 +63,15 @@ async def get_current_user(
     if datetime.utcnow() >= expire_time:
         raise credentials_exception
 
-    user = get_user_by_email(db, email=user_email)
+    user = get_user_by_email(session, email=user_email)
     if user is None:
         raise credentials_exception
     return user
 
 
 def authenticate_user(
-    email: str, password: str, db: Session = Depends(get_db)
-) -> db_models.User | None:
+    email: str, password: str, db: Session = Depends(db.get_db)
+) -> db.User | None:
     """
     Given an email & password, return a user if the login is valid; otherwise None.
     """
@@ -92,7 +91,7 @@ def authenticate_user(
 def create_token_payload(
     email: str,
     form_data: OAuth2PasswordRequestForm,
-    db: Session,
+    session: Session,
     expiration_delta: timedelta = timedelta(minutes=ACCESS_TOKEN_EXPIRATION_MINUTES),
 ) -> dict[str, str]:
     access_token = create_access_token(

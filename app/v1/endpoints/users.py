@@ -4,10 +4,9 @@ from fastapi import APIRouter, Depends, status, HTTPException, Body
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from ..models.user import UserIn, UserOut
-from ..auth import get_current_user
-from ...db import models as db_models
-from ...db import get_db
+from app.v1.models.user import UserIn, UserOut
+from app.v1.auth import get_current_user
+from app import db
 from app.v1.auth import hash_pw
 
 USER_CREATION_SECRET = os.environ["USER_CREATION_SECRET"]
@@ -19,8 +18,8 @@ router = APIRouter(prefix="/users")
 def create_user(
     user: UserIn,
     secret: str = Body(),
-    db: Session = Depends(get_db),
-) -> db_models.User:
+    session: Session = Depends(db.get_db),
+) -> db.User:
     """
     Create a new user. Requires a secret string, for now.
     """
@@ -35,22 +34,22 @@ def create_user(
     password = user.password
     hashed_pw = hash_pw(email, password)
 
-    user_record = db_models.User(email=email, pw_hash=hashed_pw)
+    user_record = db.User(email=email, pw_hash=hashed_pw)
     try:
-        db.add(user_record)
-        db.commit()
+        session.add(user_record)
+        session.commit()
     except IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="an account with that email address is already in use",
         )
-    db.refresh(user_record)
+    session.refresh(user_record)
     return user_record
 
 
 @router.get("/me", response_model=UserOut)
 def get_me(
-    current_user: db_models.User = Depends(get_current_user),
+    current_user: db.User = Depends(get_current_user),
 ) -> UserOut:
     """
     Fetch information about your own user.

@@ -15,7 +15,7 @@ FAKE_USER = db_models.User(
 )
 
 
-def fake_get_user_by_email(db: Any, email: str) -> db_models.User:
+def fake_get_user_by_email(session: Any, email: str) -> db_models.User:
     if email == FAKE_USER.email:
         return FAKE_USER
     else:
@@ -30,7 +30,7 @@ async def test_can_get_user_from_valid_jwt():
     )
     with patch("app.v1.auth.get_user_by_email", wraps=fake_get_user_by_email) as spy:
         fake_db = None
-        retrieved_user = await auth.get_current_user(token=jwt, db=fake_db)
+        retrieved_user = await auth.get_current_user(token=jwt, session=fake_db)
         spy.assert_called_once_with(fake_db, email=FAKE_USER_DATA["email"])
         assert retrieved_user is FAKE_USER
 
@@ -51,7 +51,7 @@ async def test_auth_fails_with_expired_jwt():
         with patch("app.v1.auth.datetime", FakeTime):
             fake_db = None
             with pytest.raises(HTTPException):
-                await auth.get_current_user(token=jwt, db=fake_db)
+                await auth.get_current_user(token=jwt, session=fake_db)
 
 
 def test_token_payload_contains_expected_keys():
@@ -60,7 +60,7 @@ def test_token_payload_contains_expected_keys():
     payload = auth.create_token_payload(
         email=FAKE_USER_DATA["email"],
         form_data=fake_form_data,
-        db=fake_db,
+        session=fake_db,
     )
     assert len(payload) == 2
     assert "access_token" in payload
