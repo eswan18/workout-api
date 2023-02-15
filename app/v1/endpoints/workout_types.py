@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.sql import select
 from sqlalchemy.orm import Session
 
 from ..models.workout_type import WorkoutTypeIn, WorkoutTypeInDB
@@ -22,7 +23,7 @@ def workout_types(
     """
     Fetch all accessible workout types.
     """
-    query = db.query(db_models.WorkoutType)
+    query = select(db_models.WorkoutType)
 
     # Filters
     eq_filters = {"id": id, "name": name, "owner_user_id": owner_user_id}
@@ -40,9 +41,9 @@ def workout_types(
         | (db_models.WorkoutType.owner == current_user)
     )
 
-    results = query.all()
+    result = db.scalars(query)
 
-    records = [WorkoutTypeInDB.from_orm(row) for row in results]
+    records = [WorkoutTypeInDB.from_orm(row) for row in result]
     return records
 
 

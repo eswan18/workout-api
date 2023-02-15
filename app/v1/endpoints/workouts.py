@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, status, HTTPException
+from sqlalchemy.sql import select
 from sqlalchemy.orm import Session
 
 from ..models.workout import WorkoutIn, WorkoutInDB
@@ -25,7 +26,7 @@ def workouts(
     Not yet implemented: filtering by workout time. That'll be tricky since it needs to
     support gt/lt, not just equality.
     """
-    query = db.query(db_models.Workout)
+    query = select(db_models.Workout)
 
     # Filters
     eq_filters = {"id": id, "status": status, "workout_type_id": workout_type_id}
@@ -38,7 +39,7 @@ def workouts(
     # Permissions
     query = query.filter_by(user=current_user)
 
-    result = query.all()
+    result = db.scalars(query)
     records = [WorkoutInDB.from_orm(row) for row in result]
     return records
 

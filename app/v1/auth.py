@@ -5,6 +5,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from jose import JWTError, jwt
+from sqlalchemy.sql import select
 from sqlalchemy.orm import Session
 
 from ..db import get_db
@@ -20,9 +21,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def get_user_by_email(db: Session, email: str) -> db_models.User:
-    query = db.query(db_models.User)
-    query = query.filter_by(email=email)
-    user = query.first()
+    query = select(db_models.User).filter_by(email=email)
+    user = db.scalars(query).first()
     if user is None:
         raise ValueError(f"User with email '{email}' does not exist")
     return user

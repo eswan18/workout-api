@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
+from sqlalchemy.sql import select
 from sqlalchemy.orm import Session
 
 from ..models.exercise_type import ExerciseTypeInDB, ExerciseTypeIn
@@ -22,7 +23,7 @@ def exercise_types(
     """
     Fetch all accessible exercise types.
     """
-    query = db.query(db_models.ExerciseType)
+    query = select(db_models.ExerciseType)
 
     # Filters
     eq_filters = {"id": id, "name": name, "owner_user_id": owner_user_id}
@@ -35,14 +36,14 @@ def exercise_types(
     # Permisions
     # Only return records that are owned by this user or "public", meaning their owner
     # field is null.
-    query = query.filter(
+    query = query.where(
         (db_models.ExerciseType.owner == None)  # noqa
         | (db_models.ExerciseType.owner == current_user)
     )
 
-    results = query.all()
+    result = db.scalars(query)
+    records = [ExerciseTypeInDB.from_orm(ex_tp) for ex_tp in result]
 
-    records = [ExerciseTypeInDB.from_orm(row) for row in results]
     return records
 
 

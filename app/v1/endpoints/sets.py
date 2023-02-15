@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, status, HTTPException
+from sqlalchemy.sql import select
 from sqlalchemy.orm import Session
 
 from ..models.set import SetIn, SetInDB
@@ -17,9 +18,8 @@ def sets(
     """
     Fetch all the sets for your user.
     """
-    query = db.query(db_models.Set)
-    query = query.filter_by(user=current_user)
-    result = query.all()
+    query = select(db_models.Set).filter_by(user=current_user)
+    result = db.scalars(query)
     records = [SetInDB.from_orm(row) for row in result]
     return records
 
