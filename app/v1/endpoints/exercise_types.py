@@ -54,7 +54,7 @@ def create_exercise_types(
     records = [
         db.ExerciseType(**ex.dict(), owner_user_id=current_user.id) for ex in ex_tps
     ]
-    with session_factory() as session:
+    with session_factory(expire_on_commit=False) as session:
         session.add_all(records)
         try:
             session.commit()
@@ -66,6 +66,4 @@ def create_exercise_types(
                 msg = str(exc.detail)
             session.rollback()
             raise HTTPException(status_code=400, detail=msg)
-        for record in records:
-            session.refresh(record)
     return records

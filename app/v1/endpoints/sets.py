@@ -57,7 +57,7 @@ def create_sets(
         sets = set_
 
     records = [db.Set(**s.dict(), user_id=current_user.id) for s in sets]
-    with session_factory() as session:
+    with session_factory(expire_on_commit=False) as session:
         session.add_all(records)
         try:
             session.commit()
@@ -69,6 +69,4 @@ def create_sets(
                 msg = str(exc.detail)
             session.rollback()
             raise HTTPException(status_code=400, detail=msg)
-        for record in records:
-            session.refresh(record)
     return records

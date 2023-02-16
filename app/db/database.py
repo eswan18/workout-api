@@ -18,7 +18,7 @@ class Base(DeclarativeBase):
 
 @cache
 def get_engine() -> Engine:
-    return create_engine(db_url)
+    return create_engine(db_url, echo=True)
 
 
 async def get_db() -> AsyncIterator[Session]:
