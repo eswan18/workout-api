@@ -2,11 +2,11 @@ import os
 from datetime import datetime, timedelta
 
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from sqlalchemy.sql import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
 
 from app import db
 
@@ -19,9 +19,10 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-def get_user_by_email(session: Session, email: str) -> db.User:
+def get_user_by_email(session_factory: sessionmaker[Session], email: str) -> db.User:
     query = select(db.User).filter_by(email=email)
-    user = session.scalars(query).one()
+    with session_factory() as session:
+        user = session.scalars(query).one()
     if user is None:
         raise ValueError(f"User with email '{email}' does not exist")
     return user
@@ -37,7 +38,7 @@ def hash_pw(email: str, password: str) -> str:
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
-    session: Session = Depends(db.get_db),
+    session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
 ) -> db.User:
     """
     Return the user model of the owner of an access token. Raise exception if invalid.
@@ -63,21 +64,23 @@ async def get_current_user(
     if datetime.utcnow() >= expire_time:
         raise credentials_exception
 
-    user = get_user_by_email(session, email=user_email)
+    user = get_user_by_email(session_factory, email=user_email)
     if user is None:
         raise credentials_exception
     return user
 
 
 def authenticate_user(
-    email: str, password: str, db: Session = Depends(db.get_db)
+    email: str,
+    password: str,
+    session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
 ) -> db.User | None:
     """
     Given an email & password, return a user if the login is valid; otherwise None.
     """
     # Find the user for this email
     try:
-        user = get_user_by_email(db, email)
+        user = get_user_by_email(session_factory, email)
     except ValueError:
         return None
     # Confirm the password is correct.
@@ -88,10 +91,8 @@ def authenticate_user(
         return None
 
 
-def create_token_payload(
+def generate_jwt(
     email: str,
-    form_data: OAuth2PasswordRequestForm,
-    session: Session,
     expiration_delta: timedelta = timedelta(minutes=ACCESS_TOKEN_EXPIRATION_MINUTES),
 ) -> dict[str, str]:
     access_token = create_access_token(
