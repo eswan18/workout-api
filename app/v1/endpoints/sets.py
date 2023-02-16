@@ -21,7 +21,7 @@ def read_sets(
     workout_id: UUID | None = None,
     min_start_time: datetime | None = None,
     max_start_time: datetime | None = None,
-    session: Session = Depends(db.get_db),
+    session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
     current_user: db.User = Depends(get_current_user),
 ) -> list[db.Set]:
     """
@@ -37,8 +37,9 @@ def read_sets(
     readable_filter = db.Set.read_permissions_filter(current_user)
     query = select(db.Set).where(param_filter & readable_filter)
 
-    result = session.scalars(query)
-    return list(result)
+    with session_factory() as session:
+        result = session.scalars(query)
+        return list(result)
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=list[SetInDB])

@@ -114,7 +114,7 @@ def test_flow(client: TestClient):
     response = client.post("/exercise_types/", headers=auth_header, json=new_ex_tp)
     assert response.status_code == 201
     response_payload = response.json()
-    ex_tp_id = response_payload["id"]
+    ex_tp_id = response_payload[0]["id"]
     # Fetch all exercises owned by you. Should be just this one.
     response = client.get(
         "/exercise_types/", params={"owner_user_id": my_id}, headers=auth_header
