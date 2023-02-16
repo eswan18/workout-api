@@ -17,3 +17,5 @@ typecheck:
 
 test:
 	pytest
+
+check: typecheck test lint
