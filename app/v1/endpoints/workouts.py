@@ -43,7 +43,7 @@ def workouts(
 
     with session_factory() as session:
         result = session.scalars(query)
-    return list(result)
+        return list(result)
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=list[WorkoutInDB])

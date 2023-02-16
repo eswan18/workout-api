@@ -89,7 +89,8 @@ def test_flow(client: TestClient):
     response = client.post("/workout_types/", headers=auth_header, json=new_wkt_tp)
     assert response.status_code == 201
     response_payload = response.json()
-    wkt_tp_id = response_payload["id"]
+    assert len(response_payload) == 1
+    wkt_tp_id = response_payload[0]["id"]
     # Fetch all workout types owned by you. Should be just this one.
     response = client.get(
         "/workout_types/", params={"owner_user_id": my_id}, headers=auth_header
@@ -114,6 +115,7 @@ def test_flow(client: TestClient):
     response = client.post("/exercise_types/", headers=auth_header, json=new_ex_tp)
     assert response.status_code == 201
     response_payload = response.json()
+    assert len(response_payload) == 1
     ex_tp_id = response_payload[0]["id"]
     # Fetch all exercises owned by you. Should be just this one.
     response = client.get(
@@ -159,7 +161,8 @@ def test_flow(client: TestClient):
     response = client.post("/workouts/", headers=auth_header, json=new_workout)
     assert response.status_code == 201
     response_payload = response.json()
-    wkt_id = response_payload["id"]
+    assert len(response_payload) == 1
+    wkt_id = response_payload[0]["id"]
     # Fetch all workouts owned by you -- should be just this one.
     response = client.get("/workouts/", headers=auth_header, params={"user_id": my_id})
     assert response.status_code == 200

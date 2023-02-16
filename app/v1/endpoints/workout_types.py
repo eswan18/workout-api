@@ -35,7 +35,9 @@ def workout_types(
         return list(result)
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=list[WorkoutTypeInDB])
+@router.post(
+    "/", status_code=status.HTTP_201_CREATED, response_model=list[WorkoutTypeInDB]
+)
 def create_workout_type(
     workout_type: WorkoutTypeIn | list[WorkoutTypeIn],
     session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
