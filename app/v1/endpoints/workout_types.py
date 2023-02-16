@@ -2,7 +2,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.sql import select
-from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session, sessionmaker
+from psycopg2.errors import ForeignKeyViolation
 
 from app.v1.models.workout_type import WorkoutTypeIn, WorkoutTypeInDB
 from app.v1.auth import get_current_user
@@ -16,9 +18,9 @@ def workout_types(
     id: UUID | None = None,
     name: str | None = None,
     owner_user_id: UUID | None = None,
-    session: Session = Depends(db.get_db),
+    session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
     current_user: db.User = Depends(get_current_user),
-) -> list[WorkoutTypeInDB]:
+) -> list[db.WorkoutType]:
     """
     Fetch workout types.
     """
@@ -28,32 +30,38 @@ def workout_types(
     permissions_filter = db.WorkoutType.read_permissions_filter(current_user)
     query = select(db.WorkoutType).filter(param_filter & permissions_filter)
 
-    result = session.scalars(query)
-    records = [WorkoutTypeInDB.from_orm(row) for row in result]
-    return records
+    with session_factory() as session:
+        result = session.scalars(query)
+        return list(result)
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=WorkoutTypeInDB)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=list[WorkoutTypeInDB])
 def create_workout_type(
-    workout_type: WorkoutTypeIn,
-    session: Session = Depends(db.get_db),
+    workout_type: WorkoutTypeIn | list[WorkoutTypeIn],
+    session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
     current_user: db.User = Depends(get_current_user),
-) -> db.WorkoutType:
+) -> list[db.WorkoutType]:
     """
-    Create a new workout type.
+    Create a new workout type or workout types..
     """
-    # Make sure that the parent workout type ID, if included, is in the DB.
-    parent_id = workout_type.parent_workout_type_id
-    if parent_id is not None:
-        if not db.model_id_exists(Model=db.WorkoutType, id=parent_id, session=session):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"workout type with id {parent_id} does not exist",
-            )
+    if not isinstance(workout_type, list):
+        wkt_tps = [workout_type]
+    else:
+        wkt_tps = workout_type
 
-    workout_type_record = db.WorkoutType(**workout_type.dict())
-    workout_type_record.owner_user_id = current_user.id
-    session.add(workout_type_record)
-    session.commit()
-    session.refresh(workout_type_record)
-    return workout_type_record
+    records = [
+        db.WorkoutType(**wk.dict(), owner_user_id=current_user.id) for wk in wkt_tps
+    ]
+    with session_factory(expire_on_commit=False) as session:
+        session.add_all(records)
+        try:
+            session.commit()
+        except IntegrityError as exc:
+            original_error = exc.orig
+            if isinstance(original_error, ForeignKeyViolation):
+                msg = str(original_error)
+            else:
+                msg = str(exc.detail)
+            session.rollback()
+            raise HTTPException(status_code=400, detail=msg)
+    return records

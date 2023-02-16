@@ -3,9 +3,11 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.sql import select
-from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session, sessionmaker
+from psycopg2.errors import ForeignKeyViolation
 
-from ..models.workout import WorkoutIn, WorkoutInDB
+from app.v1.models.workout import WorkoutIn, WorkoutInDB
 from app.v1.auth import get_current_user
 from app import db
 
@@ -21,9 +23,9 @@ def workouts(
     max_start_time: datetime | None = None,
     min_end_time: datetime | None = None,
     max_end_time: datetime | None = None,
-    session: Session = Depends(db.get_db),
+    session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
     current_user: db.User = Depends(get_current_user),
-) -> list[WorkoutInDB]:
+) -> list[db.Workout]:
     """
     Fetch workouts.
     """
@@ -39,37 +41,36 @@ def workouts(
     permissions_filter = db.Workout.read_permissions_filter(current_user)
     query = select(db.Workout).filter(param_filter & permissions_filter)
 
-    result = session.scalars(query)
-    records = [WorkoutInDB.from_orm(row) for row in result]
-    return records
+    with session_factory() as session:
+        result = session.scalars(query)
+    return list(result)
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=WorkoutInDB)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=list[WorkoutInDB])
 def create_workout(
-    workout: WorkoutIn,
-    session: Session = Depends(db.get_db),
+    workout: WorkoutIn | list[WorkoutIn],
+    session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
     current_user: db.User = Depends(get_current_user),
-) -> db.Workout:
+) -> list[db.Workout]:
     """
-    Record a new workout.
+    Record a new workout or workouts.
     """
-    # Add the current user's ID to the record.
-    workout_dict = workout.dict()
-    workout_dict["user_id"] = current_user.id
+    if not isinstance(workout, list):
+        wkts = [workout]
+    else:
+        wkts = workout
 
-    # Validate that the workout_type_id, if included, is present in the DB.
-    workout_type_id = workout_dict["workout_type_id"]
-    if workout_type_id is not None:
-        if not db.model_id_exists(
-            Model=db.WorkoutType, id=workout_type_id, session=session
-        ):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"workout type with id {workout_type_id} does not exist",
-            )
-
-    workout_record = db.Workout(**workout_dict)
-    session.add(workout_record)
-    session.commit()
-    session.refresh(workout_record)
-    return workout_record
+    records = [db.Workout(**wkt.dict(), user_id=current_user.id) for wkt in wkts]
+    with session_factory(expire_on_commit=False) as session:
+        session.add_all(records)
+        try:
+            session.commit()
+        except IntegrityError as exc:
+            original_error = exc.orig
+            if isinstance(original_error, ForeignKeyViolation):
+                msg = str(original_error)
+            else:
+                msg = str(exc.detail)
+            session.rollback()
+            raise HTTPException(status_code=400, detail=msg)
+    return records

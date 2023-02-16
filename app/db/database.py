@@ -21,7 +21,7 @@ def get_engine() -> Engine:
     return create_engine(db_url, echo=True)
 
 
-async def get_db() -> AsyncIterator[Session]:
+async def get_session() -> AsyncIterator[Session]:
     engine = get_engine()
     SessionLocal = sessionmaker(
         autocommit=False,
