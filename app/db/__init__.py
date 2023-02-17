@@ -1,4 +1,4 @@
-from .database import Base, get_session, get_session_factory, model_id_exists
+from .database import Base, get_session, get_session_factory
 from .models import ExerciseType, Set, User, Workout, WorkoutType
 
 
@@ -7,7 +7,6 @@ __all__ = [
     "ExerciseType",
     "get_session",
     "get_session_factory",
-    "model_id_exists",
     "Set",
     "User",
     "Workout",

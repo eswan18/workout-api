@@ -39,18 +39,3 @@ async def get_session_factory() -> AsyncIterator[sessionmaker[Session]]:
     engine = get_engine()
     session_factory = sessionmaker(bind=engine)
     yield session_factory
-
-
-def model_id_exists(
-    Model: type[Base],
-    id: str | UUID,
-    session: Session,
-) -> bool:
-    """
-    Check whether an ID exists for a particular model in the DB.
-    """
-    first_instance = session.query(Model.id).filter_by(id=id).first()  # type: ignore
-    if first_instance is None:
-        return False
-    else:
-        return True
