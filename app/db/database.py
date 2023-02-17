@@ -1,5 +1,4 @@
 import os
-from uuid import UUID
 from functools import cache
 from typing import AsyncIterator
 
