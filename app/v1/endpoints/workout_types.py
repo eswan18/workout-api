@@ -1,7 +1,8 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.sql import select, update
+from pydantic.fields import Undefined, UndefinedType
+from fastapi import APIRouter, Depends, HTTPException, status, Body
+from sqlalchemy.sql import select, update, delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 from psycopg2.errors import ForeignKeyViolation
@@ -72,7 +73,7 @@ def create_workout_type(
     return records
 
 
-@router.put("/", status_code=status.HTTP_201_CREATED, response_model=WorkoutTypeInDB)
+@router.put("/", status_code=status.HTTP_200_OK, response_model=WorkoutTypeInDB)
 def overwrite_workout_type(
     id: UUID,
     workout_type: WorkoutTypeIn,
@@ -117,5 +118,83 @@ def overwrite_workout_type(
                 status_code=404, detail=f"workout type with id '{id}' not found"
             )
         session.commit()
+
+    return result
+
+
+@router.patch("/", status_code=status.HTTP_200_OK, response_model=WorkoutTypeInDB)
+def update_workout_type(
+    id: UUID,
+    name: str = Body(Undefined),
+    notes: str | None = Body(Undefined),
+    parent_workout_type_id: UUID | None = Body(Undefined),
+    session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
+    current_user: db.User = Depends(get_current_user),
+) -> db.WorkoutType:
+    # Filter on ID and read permissions.
+    query = (
+        select(db.WorkoutType)
+        .filter_by(id=id)
+        .where(db.WorkoutType.readable_by(current_user))
+    )
+    with session_factory(expire_on_commit=False) as session:
+        record = session.scalars(query).one_or_none()
+        if record is None:
+            raise HTTPException(
+                status_code=404, detail=f"workout type with id '{id}' not found"
+            )
+        if not record.updateable_by(current_user):
+            raise HTTPException(
+                status_code=401,
+                detail=f"you do not have permissions to update workout type with id '{id}'",
+            )
+
+        if not isinstance(name, UndefinedType):
+            record.name = name
+        if not isinstance(notes, UndefinedType):
+            record.notes = notes
+        if not isinstance(parent_workout_type_id, UndefinedType):
+            record.parent_workout_type_id = parent_workout_type_id
+        session.commit()
+
+    return record
+
+
+@router.delete("/", status_code=status.HTTP_200_OK, response_model=WorkoutTypeInDB)
+def delete_workout_type(
+    id: UUID,
+    session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
+    current_user: db.User = Depends(get_current_user),
+) -> db.WorkoutType:
+    # Filter on ID and read permissions.
+    query = (
+        select(db.WorkoutType)
+        .filter_by(id=id)
+        .where(db.WorkoutType.readable_by(current_user))
+    )
+    with session_factory(expire_on_commit=False) as session:
+        record = session.scalars(query).one_or_none()
+        if record is None:
+            raise HTTPException(
+                status_code=404, detail=f"workout type with id '{id}' not found"
+            )
+        if not record.deleteable_by(current_user):
+            raise HTTPException(
+                status_code=401,
+                detail=f"you do not have permissions to update workout type with id '{id}'",
+            )
+        stmt = (
+            delete(db.WorkoutType)
+            .where(db.WorkoutType.id == record.id)
+            .returning(db.WorkoutType)
+        )
+        result = session.scalar(stmt)
+        if result is None:
+            # It's unlikely that we could get here, since we already checked for the
+            # presence of this resource above, but it is possible the db could change in
+            # the time since.
+            raise HTTPException(
+                status_code=404, detail=f"workout type with id '{id}' not found"
+            )
 
     return result

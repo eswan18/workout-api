@@ -63,4 +63,12 @@ class WorkoutType(Base, ModificationTimesMixin):
         self,
         user: User,
     ) -> bool:
+        """Determine if this workout type can be updated by this user."""
+        return self.owner == user
+
+    def deleteable_by(
+        self,
+        user: User,
+    ) -> bool:
+        """Determine if this workout type can be deleted by this user."""
         return self.owner == user
