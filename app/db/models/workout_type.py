@@ -58,3 +58,9 @@ class WorkoutType(Base, ModificationTimesMixin):
         # Users can access workout types that they own or that are public, denoted as a
         # null value in owner_user_id.
         return (cls.owner == user) | (cls.owner == None)
+
+    def updateable_by(
+        self,
+        user: User,
+    ) -> bool:
+        return self.owner == user

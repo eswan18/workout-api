@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.sql import select
+from sqlalchemy.sql import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 from psycopg2.errors import ForeignKeyViolation
@@ -70,3 +70,52 @@ def create_workout_type(
             session.rollback()
             raise HTTPException(status_code=400, detail=msg)
     return records
+
+
+@router.put("/", status_code=status.HTTP_201_CREATED, response_model=WorkoutTypeInDB)
+def overwrite_workout_type(
+    id: UUID,
+    workout_type: WorkoutTypeIn,
+    session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
+    current_user: db.User = Depends(get_current_user),
+) -> db.WorkoutType:
+    # Filter on ID and read permissions.
+    query = (
+        select(db.WorkoutType)
+        .filter_by(id=id)
+        .where(db.WorkoutType.readable_by(current_user))
+    )
+    with session_factory(expire_on_commit=False) as session:
+        record = session.scalars(query).one_or_none()
+        if record is None:
+            raise HTTPException(
+                status_code=404, detail=f"workout type with id '{id}' not found"
+            )
+        if not record.updateable_by(current_user):
+            raise HTTPException(
+                status_code=401,
+                detail=f"you do not have permissions to update workout type with id '{id}'",
+            )
+
+        stmt = (
+            update(db.WorkoutType)
+            .returning(db.WorkoutType)
+            .filter_by(id=id)
+            .where(db.WorkoutType.readable_by(current_user))
+            .values(
+                name=workout_type.name,
+                notes=workout_type.notes,
+                parent_workout_type_id=workout_type.parent_workout_type_id,
+            )
+        )
+        result = session.scalar(stmt)
+        if result is None:
+            # It's unlikely that we could get here, since we already checked for the
+            # presence of this resource above, but it is possible the db could change in
+            # the time since.
+            raise HTTPException(
+                status_code=404, detail=f"workout type with id '{id}' not found"
+            )
+        session.commit()
+
+    return result

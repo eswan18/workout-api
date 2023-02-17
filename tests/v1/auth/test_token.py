@@ -30,7 +30,9 @@ async def test_can_get_user_from_valid_jwt():
     )
     with patch("app.v1.auth.get_user_by_email", wraps=fake_get_user_by_email) as spy:
         fake_session_factory = None
-        retrieved_user = await auth.get_current_user(token=jwt, session_factory=fake_session_factory)
+        retrieved_user = await auth.get_current_user(
+            token=jwt, session_factory=fake_session_factory
+        )
         spy.assert_called_once_with(fake_session_factory, email=FAKE_USER_DATA["email"])
         assert retrieved_user is FAKE_USER
 
@@ -51,7 +53,9 @@ async def test_auth_fails_with_expired_jwt():
         with patch("app.v1.auth.datetime", FakeTime):
             fake_session_factory = None
             with pytest.raises(HTTPException):
-                await auth.get_current_user(token=jwt, session_factory=fake_session_factory)
+                await auth.get_current_user(
+                    token=jwt, session_factory=fake_session_factory
+                )
 
 
 def test_token_payload_contains_expected_keys():
