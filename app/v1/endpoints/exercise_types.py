@@ -27,8 +27,9 @@ def read_exercise_types(
     param_filter = db.ExerciseType.param_filter(
         id=id, name=name, owner_user_id=owner_user_id
     )
-    readable_filter = db.ExerciseType.read_permissions_filter(current_user)
-    query = select(db.ExerciseType).where(param_filter & readable_filter)
+    query = select(db.ExerciseType).where(
+        param_filter & db.ExerciseType.readable_by(current_user)
+    )
 
     with session_factory() as session:
         result = session.scalars(query)

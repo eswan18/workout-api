@@ -38,8 +38,9 @@ def workouts(
         min_end_time=min_end_time,
         max_end_time=max_end_time,
     )
-    permissions_filter = db.Workout.read_permissions_filter(current_user)
-    query = select(db.Workout).filter(param_filter & permissions_filter)
+    query = select(db.Workout).filter(
+        param_filter & db.Workout.readable_by(current_user)
+    )
 
     with session_factory() as session:
         result = session.scalars(query)

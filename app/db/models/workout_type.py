@@ -50,7 +50,7 @@ class WorkoutType(Base, ModificationTimesMixin):
         return f
 
     @classmethod
-    def read_permissions_filter(
+    def readable_by(
         cls,
         user: User,
     ) -> BooleanClauseList:

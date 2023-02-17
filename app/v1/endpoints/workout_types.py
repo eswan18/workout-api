@@ -27,8 +27,9 @@ def workout_types(
     param_filter = db.WorkoutType.param_filter(
         id=id, name=name, owner_user_id=owner_user_id
     )
-    permissions_filter = db.WorkoutType.read_permissions_filter(current_user)
-    query = select(db.WorkoutType).filter(param_filter & permissions_filter)
+    query = select(db.WorkoutType).filter(
+        param_filter & db.WorkoutType.readable_by(current_user)
+    )
 
     with session_factory() as session:
         result = session.scalars(query)

@@ -68,25 +68,9 @@ class Set(Base, ModificationTimesMixin):
         return f
 
     @classmethod
-    def read_permissions_filter(
+    def readable_by(
         cls,
         user: User,
     ) -> ColumnElement[bool]:
         """Build a filter for sets this user can read."""
-        return cls.user == user
-
-    @classmethod
-    def update_permissions_filter(
-        cls,
-        user: User,
-    ) -> ColumnElement[bool]:
-        """Build a filter for sets this user can update."""
-        return cls.user == user
-
-    @classmethod
-    def delete_permissions_filter(
-        cls,
-        user: User,
-    ) -> ColumnElement[bool]:
-        """Build a filter for sets this user can delete."""
         return cls.user == user
