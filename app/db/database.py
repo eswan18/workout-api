@@ -38,3 +38,9 @@ async def get_session_factory() -> AsyncIterator[sessionmaker[Session]]:
     engine = get_engine()
     session_factory = sessionmaker(bind=engine)
     yield session_factory
+
+
+def get_session_factory_sync() -> sessionmaker[Session]:
+    engine = get_engine()
+    session_factory = sessionmaker(bind=engine)
+    return session_factory
