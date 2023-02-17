@@ -13,7 +13,13 @@ def postable_payload():
 
 
 def test_unauthenticated_user_cant_create_workouts(client, postable_payload):
+    # No creds
     response = client.post(ROUTE, json=postable_payload)
+    assert response.status_code == 401
+    # Wrong creds
+    response = client.post(
+        ROUTE, json=postable_payload, headers={"Authorization": "Bearer 123456"}
+    )
     assert response.status_code == 401
 
 

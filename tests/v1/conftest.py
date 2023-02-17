@@ -3,6 +3,7 @@ from random import choices
 from uuid import UUID, uuid4
 from typing import Iterator
 
+from sqlalchemy import delete
 from fastapi.testclient import TestClient
 import pytest
 
@@ -18,7 +19,10 @@ def client() -> TestClient:
 
 
 @pytest.fixture(scope="function")
-def fake_current_user(client) -> Iterator[db.User]:
+def override_user_auth(client) -> Iterator[db.User]:
+    """
+    Temporarily circumvent the API's auth-checking and pretend to be a user.
+    """
     user = db.User(
         id=UUID("117e87dd-9f1a-4f20-a4c1-4fa646077370"),  # type: ignore
         email="elend@elendel.gov",
@@ -34,8 +38,11 @@ def fake_current_user(client) -> Iterator[db.User]:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def test_user_account() -> db.User:
-    # Create a unique, fake user.
+def test_user() -> Iterator[db.User]:
+    """
+    Create a temporary test user for the duration of testing.
+    """
+    # Setup: create a unique, fake user.
     user_string = "".join(choices(ascii_letters, k=15))
     password = "".join(choices(ascii_letters, k=15))
     unique_email = f"testuser-{user_string}@example.com"
@@ -50,11 +57,26 @@ def test_user_account() -> db.User:
     with session_factory(expire_on_commit=False) as session:
         session.add(user)
         session.commit()
-    return user
+
+    yield user
+
+    # Teardown: delete from db.
+    with session_factory(expire_on_commit=False) as session:
+        # Order matters -- we need to delete tables with foreign keys first.
+        stmts = [
+            delete(db.Set).where(db.Set.user == user),
+            delete(db.ExerciseType).where(db.ExerciseType.owner == user),
+            delete(db.Workout).where(db.Workout.user == user),
+            delete(db.WorkoutType).where(db.WorkoutType.owner == user),
+            delete(db.User).where(db.User.id == user.id),
+        ]
+        for stmt in stmts:
+            session.execute(stmt)
+            session.commit()
 
 
 @pytest.fixture
-def test_user_auth(test_user_account: db.User) -> dict[str, str]:
-    jwt = generate_jwt(test_user_account.email)
+def test_user_auth(test_user: db.User) -> dict[str, str]:
+    jwt = generate_jwt(test_user.email)
     auth_header = {"Authorization": f"Bearer {jwt['access_token']}"}
     return auth_header
