@@ -189,6 +189,7 @@ def delete_workout_type(
             .returning(db.WorkoutType)
         )
         result = session.scalar(stmt)
+        session.commit()
         if result is None:
             # It's unlikely that we could get here, since we already checked for the
             # presence of this resource above, but it is possible the db could change in

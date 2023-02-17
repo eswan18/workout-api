@@ -1,10 +1,15 @@
+from typing import TYPE_CHECKING
 import uuid
 
 from sqlalchemy import Text, UUID
-from sqlalchemy.orm import mapped_column, Mapped
+from sqlalchemy.orm import mapped_column, Mapped, relationship
 
 from app.db.database import Base
 from app.db.mixins import ModificationTimesMixin
+
+
+if TYPE_CHECKING:
+    from .workout_type import WorkoutType
 
 
 class User(Base, ModificationTimesMixin):
@@ -15,3 +20,7 @@ class User(Base, ModificationTimesMixin):
     )
     email: Mapped[str] = mapped_column(Text, unique=True)
     pw_hash: Mapped[str] = mapped_column(Text)
+
+    owned_workout_types: Mapped[list["WorkoutType"]] = relationship(
+        "WorkoutType", back_populates="owner"
+    )

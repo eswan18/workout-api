@@ -29,7 +29,7 @@ class WorkoutType(Base, ModificationTimesMixin):
     children: Mapped[list["WorkoutType"]] = relationship(
         "WorkoutType", backref=backref("parent_workout_type", remote_side=[id])
     )
-    owner: Mapped[User] = relationship(User, backref="owned_workout_types")
+    owner: Mapped[User] = relationship(User, back_populates="owned_workout_types")
 
     @classmethod
     def param_filter(
