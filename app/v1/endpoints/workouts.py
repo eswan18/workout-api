@@ -38,8 +38,10 @@ def workouts(
         min_end_time=min_end_time,
         max_end_time=max_end_time,
     )
-    query = select(db.Workout).filter(
-        param_filter & db.Workout.readable_by(current_user)
+    query = (
+        select(db.Workout)
+        .where(param_filter)
+        .where(db.Workout.readable_by(current_user))
     )
 
     with session_factory() as session:

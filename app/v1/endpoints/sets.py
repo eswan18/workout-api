@@ -34,7 +34,7 @@ def read_sets(
         min_start_time=min_start_time,
         max_start_time=max_start_time,
     )
-    query = select(db.Set).where(param_filter & db.Set.readable_by(current_user))
+    query = select(db.Set).where(param_filter).where(db.Set.readable_by(current_user))
 
     with session_factory() as session:
         result = session.scalars(query)

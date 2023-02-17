@@ -27,8 +27,10 @@ def workout_types(
     param_filter = db.WorkoutType.param_filter(
         id=id, name=name, owner_user_id=owner_user_id
     )
-    query = select(db.WorkoutType).filter(
-        param_filter & db.WorkoutType.readable_by(current_user)
+    query = (
+        select(db.WorkoutType)
+        .where(param_filter)
+        .where(db.WorkoutType.readable_by(current_user))
     )
 
     with session_factory() as session:
