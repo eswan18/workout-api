@@ -1,15 +1,20 @@
+from uuid import UUID
 import os
 from datetime import datetime, timezone
 from string import ascii_letters
 import random
 
+from sqlalchemy.orm import sessionmaker, Session
+from app.db.utils import recursive_hard_delete
+
 from fastapi.testclient import TestClient
+from app.db.database import get_session_factory_sync
 
 
 USER_CREATION_SECRET = os.environ["USER_CREATION_SECRET"]
 
 
-def test_flow(client: TestClient):
+def test_flow(client: TestClient, session_factory: sessionmaker[Session]):
     ####################
     # Create a new user.
     ####################
@@ -219,3 +224,6 @@ def test_flow(client: TestClient):
     response_payload = response.json()
     assert len(response_payload) == 2
     assert set(record["id"] for record in response_payload) == set(set_ids)
+
+    # Clean up.
+    recursive_hard_delete(UUID(my_id), session_factory)
