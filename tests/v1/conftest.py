@@ -3,13 +3,15 @@ from random import choices
 from uuid import UUID, uuid4
 from typing import Iterator
 
-from sqlalchemy import delete
+from sqlalchemy.orm import Session, sessionmaker
 from fastapi.testclient import TestClient
 import pytest
 
 from app.v1 import app, auth
 from app import db
+from app.db.utils import recursive_hard_delete
 from app.db.database import get_session_factory_sync
+from app.db.models.user import UserWithAuth
 from app.v1.auth import hash_pw, generate_jwt
 
 
@@ -37,10 +39,15 @@ def override_user_auth(client) -> Iterator[db.User]:
     del client.app.dependency_overrides[auth.get_current_user]
 
 
+@pytest.fixture(scope="session")
+def session_factory() -> sessionmaker[Session]:
+    return get_session_factory_sync()
+
+
 @pytest.fixture(scope="session", autouse=True)
-def test_user() -> Iterator[db.User]:
+def primary_test_user(session_factory) -> Iterator[UserWithAuth]:
     """
-    Create a temporary test user for the duration of testing.
+    Create a temporary test user and corresponding auth for the duration of testing.
     """
     # Setup: create a unique, fake user.
     user_string = "".join(choices(ascii_letters, k=15))
@@ -53,30 +60,14 @@ def test_user() -> Iterator[db.User]:
         pw_hash=pw_hash,
     )
     # Insert it in the db.
-    session_factory = get_session_factory_sync()
     with session_factory(expire_on_commit=False) as session:
         session.add(user)
         session.commit()
 
-    yield user
+    jwt = generate_jwt(user.email)
+    auth_header = {"Authorization": f"Bearer {jwt['access_token']}"}
+
+    yield UserWithAuth(user, auth_header)
 
     # Teardown: delete from db.
-    with session_factory(expire_on_commit=False) as session:
-        # Order matters -- we need to delete tables with foreign keys first.
-        stmts = [
-            delete(db.Set).where(db.Set.user == user),
-            delete(db.ExerciseType).where(db.ExerciseType.owner == user),
-            delete(db.Workout).where(db.Workout.user == user),
-            delete(db.WorkoutType).where(db.WorkoutType.owner == user),
-            delete(db.User).where(db.User.id == user.id),
-        ]
-        for stmt in stmts:
-            session.execute(stmt)
-            session.commit()
-
-
-@pytest.fixture
-def test_user_auth(test_user: db.User) -> dict[str, str]:
-    jwt = generate_jwt(test_user.email)
-    auth_header = {"Authorization": f"Bearer {jwt['access_token']}"}
-    return auth_header
+    recursive_hard_delete(user.id, session_factory)
