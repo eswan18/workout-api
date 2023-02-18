@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 import uuid
 
 from sqlalchemy import Text, UUID
@@ -24,3 +24,14 @@ class User(Base, ModificationTimesMixin):
     owned_workout_types: Mapped[list["WorkoutType"]] = relationship(
         "WorkoutType", back_populates="owner"
     )
+
+
+class UserWithAuth(NamedTuple):
+    """'
+    A user along with a JWT header. Useful mainly as an abstraction for testing.
+
+    The auth field will usually be something like: {'Authorization': 'Bearer 123abc'}
+    """
+
+    user: User
+    auth: dict[str, str]
