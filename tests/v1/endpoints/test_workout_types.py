@@ -163,7 +163,8 @@ def test_user_can_read_newly_written_workout_type(
 ):
     response = client.post(ROUTE, json=postable_payload, headers=primary_test_user.auth)
     id = response.json()[0]["id"]
-    response = client.get(ROUTE + f"?id={id}", headers=primary_test_user.auth)
+    params = {"id": id}
+    response = client.get(ROUTE, params=params, headers=primary_test_user.auth)
     payload = response.json()
     assert len(payload) == 1
     assert payload[0]["id"] == id
@@ -203,8 +204,4 @@ def test_filtering(
     response = client.get(ROUTE, params=params, headers=primary_test_user.auth)
     assert response.status_code == 200
     payload = response.json()
-
-    print("here> >>>>")
-    for p in payload:
-        print(str(p))
     assert len(payload) == len(primary_user_workout_types)
