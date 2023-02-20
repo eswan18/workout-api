@@ -1,3 +1,4 @@
+from urllib.parse import urlencode
 from uuid import UUID
 from typing import Iterable
 
@@ -24,23 +25,26 @@ def postable_payload():
 @pytest.fixture(scope="function")
 def primary_user_workout_types(
     session_factory: sessionmaker[Session], primary_test_user: UserWithAuth
-) -> Iterable[tuple[WorkoutType, WorkoutType]]:
+) -> Iterable[tuple[WorkoutType, ...]]:
     """Add workout types to the db owned by the primary user."""
     user_id = primary_test_user.user.id
     with session_factory(expire_on_commit=False) as session:
-        rows = (
-            WorkoutType(
-                name="a new workout 1",
-                owner_user_id=user_id,
-            ),
-            WorkoutType(
-                name="a new workout 2",
-                owner_user_id=user_id,
-            ),
+        wt1 = WorkoutType(
+            name="a new workout 1",
+            owner_user_id=user_id,
         )
-        session.add_all(rows)
+        session.add(wt1)
+        session.commit()
+        # Another workout, child of workout 1.
+        wt2 = WorkoutType(
+            name="a new workout 2",
+            owner_user_id=user_id,
+            parent_workout_type_id=wt1.id,
+        )
+        session.add(wt2)
         session.commit()
 
+    rows = (wt1, wt2)
     yield rows
 
     with session_factory() as session:
@@ -82,12 +86,13 @@ def test_authenticated_user_can_create_workout_types(
     resource = payload[0]
     assert "id" in resource
 
-    # Clean up
+    # Clean up and make sure that record was in the db.
     with session_factory() as session:
-        session.execute(
+        result = session.execute(
             delete(WorkoutType).where(WorkoutType.id == UUID(resource["id"]))
         )
         session.commit()
+        assert result.rowcount == 1
 
 
 #########
@@ -98,7 +103,7 @@ def test_authenticated_user_can_create_workout_types(
 def test_unauthenticated_user_cant_read(
     client: TestClient,
     primary_test_user: UserWithAuth,
-    primary_user_workout_types: tuple[WorkoutType, WorkoutType],
+    primary_user_workout_types: tuple[WorkoutType, ...],
 ):
     # Try with no creds.
     response = client.get(ROUTE)
@@ -118,7 +123,7 @@ def test_unauthenticated_user_cant_read(
 def test_one_user_cant_read_anothers_workout_types(
     client: TestClient,
     secondary_test_user: UserWithAuth,
-    primary_user_workout_types: tuple[WorkoutType, WorkoutType],
+    primary_user_workout_types: tuple[WorkoutType, ...],
 ):
     response = client.get(ROUTE, headers=secondary_test_user.auth)
     assert response.status_code == 200
@@ -131,7 +136,7 @@ def test_one_user_cant_read_anothers_workout_types(
 def test_user_can_read_own_and_public_workout_types(
     client: TestClient,
     primary_test_user: UserWithAuth,
-    primary_user_workout_types: tuple[WorkoutType, WorkoutType],
+    primary_user_workout_types: tuple[WorkoutType, ...],
     session_factory: sessionmaker[Session],
 ):
     # How many public workouts should there be?
@@ -154,18 +159,52 @@ def test_user_can_read_newly_written_workout_type(
     client: TestClient,
     primary_test_user: UserWithAuth,
     postable_payload: dict[str, str],
+    session_factory: sessionmaker[Session],
 ):
     response = client.post(ROUTE, json=postable_payload, headers=primary_test_user.auth)
     id = response.json()[0]["id"]
-    response = client.get(ROUTE + f'?id={id}', headers=primary_test_user.auth)
+    response = client.get(ROUTE + f"?id={id}", headers=primary_test_user.auth)
     payload = response.json()
     assert len(payload) == 1
     assert payload[0]["id"] == id
+
+    # Clean up and make sure that record was in the db.
+    with session_factory() as session:
+        result = session.execute(
+            delete(WorkoutType).where(WorkoutType.id == UUID(payload[0]["id"]))
+        )
+        session.commit()
+        assert result.rowcount == 1
 
 
 def test_filtering(
     client: TestClient,
     primary_test_user: UserWithAuth,
-    primary_user_workout_types: tuple[WorkoutType, WorkoutType],
+    primary_user_workout_types: tuple[WorkoutType, ...],
 ):
-    ...
+    # Get by ID.
+    params = {"id": primary_user_workout_types[0].id}
+    response = client.get(ROUTE, params=params, headers=primary_test_user.auth)
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload) == 1
+    assert payload[0]["name"] == primary_user_workout_types[0].name
+
+    # Get by name.
+    params = {"name": primary_user_workout_types[1].name}
+    response = client.get(ROUTE, params=params, headers=primary_test_user.auth)
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload) == 1
+    assert payload[0]["id"] == str(primary_user_workout_types[1].id)
+
+    # Get by parent ID.
+    params = {"owner_user_id": primary_user_workout_types[1].owner_user_id}
+    response = client.get(ROUTE, params=params, headers=primary_test_user.auth)
+    assert response.status_code == 200
+    payload = response.json()
+
+    print("here> >>>>")
+    for p in payload:
+        print(str(p))
+    assert len(payload) == len(primary_user_workout_types)
