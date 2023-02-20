@@ -1,4 +1,4 @@
-from urllib.parse import urlencode
+from datetime import datetime
 from uuid import UUID
 from typing import Iterable
 
@@ -30,14 +30,14 @@ def primary_user_workout_types(
     user_id = primary_test_user.user.id
     with session_factory(expire_on_commit=False) as session:
         wt1 = WorkoutType(
-            name="a new workout 1",
+            name="a new workout type 1",
             owner_user_id=user_id,
         )
         session.add(wt1)
         session.commit()
         # Another workout, child of workout 1.
         wt2 = WorkoutType(
-            name="a new workout 2",
+            name="a new workout type 2",
             owner_user_id=user_id,
             parent_workout_type_id=wt1.id,
         )
@@ -51,6 +51,28 @@ def primary_user_workout_types(
         session.execute(
             delete(WorkoutType).where(WorkoutType.id.in_(row.id for row in rows))
         )
+        session.commit()
+
+
+@pytest.fixture(scope="function")
+def primary_user_soft_deleted_workout_type(
+    session_factory: sessionmaker[Session], primary_test_user: UserWithAuth
+) -> Iterable[WorkoutType]:
+    """Add a soft-deleted workout type to the db owned by the primary user."""
+    user_id = primary_test_user.user.id
+    with session_factory(expire_on_commit=False) as session:
+        sd_wt = WorkoutType(
+            name="a deleted workout type",
+            owner_user_id=user_id,
+            deleted_at=datetime(year=2023, month=1, day=1),
+        )
+        session.add(sd_wt)
+        session.commit()
+
+    yield sd_wt
+
+    with session_factory() as session:
+        session.execute(delete(WorkoutType).where(WorkoutType.id == sd_wt.id))
         session.commit()
 
 
@@ -137,8 +159,12 @@ def test_user_can_read_own_and_public_workout_types(
     client: TestClient,
     primary_test_user: UserWithAuth,
     primary_user_workout_types: tuple[WorkoutType, ...],
+    primary_user_soft_deleted_workout_type: WorkoutType,
     session_factory: sessionmaker[Session],
 ):
+    """
+    Users can read their own and public workout types but not soft deleted ones.
+    """
     # How many public workouts should there be?
     with session_factory() as session:
         n_public_workout_types = session.scalar(
