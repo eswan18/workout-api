@@ -69,3 +69,22 @@ def primary_user_soft_deleted_workout_type(
     with session_factory() as session:
         session.execute(delete(WorkoutType).where(WorkoutType.id == sd_wt.id))
         session.commit()
+
+
+@pytest.fixture(scope="function")
+def public_workout_type(
+    session_factory: sessionmaker[Session],
+) -> Iterable[WorkoutType]:
+    """Add a public workout type to the db."""
+    with session_factory(expire_on_commit=False) as session:
+        wt = WorkoutType(
+            name="a public workout type",
+        )
+        session.add(wt)
+        session.commit()
+
+    yield wt
+
+    with session_factory() as session:
+        session.execute(delete(WorkoutType).where(WorkoutType.id == wt.id))
+        session.commit()
