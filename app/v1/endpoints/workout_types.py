@@ -1,8 +1,9 @@
+from datetime import datetime
 from uuid import UUID
 
 from pydantic.fields import Undefined, UndefinedType
 from fastapi import APIRouter, Depends, HTTPException, status, Body
-from sqlalchemy.sql import select, update, delete
+from sqlalchemy.sql import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 from psycopg2.errors import ForeignKeyViolation
@@ -32,6 +33,7 @@ def workout_types(
         select(db.WorkoutType)
         .where(param_filter)
         .where(db.WorkoutType.readable_by(current_user))
+        .where(db.WorkoutType.not_soft_deleted())
     )
 
     with session_factory() as session:
@@ -85,6 +87,7 @@ def overwrite_workout_type(
         select(db.WorkoutType)
         .filter_by(id=id)
         .where(db.WorkoutType.readable_by(current_user))
+        .where(db.WorkoutType.not_soft_deleted())
     )
     with session_factory(expire_on_commit=False) as session:
         record = session.scalars(query).one_or_none()
@@ -136,6 +139,7 @@ def update_workout_type(
         select(db.WorkoutType)
         .filter_by(id=id)
         .where(db.WorkoutType.readable_by(current_user))
+        .where(db.WorkoutType.not_soft_deleted())
     )
     with session_factory(expire_on_commit=False) as session:
         record = session.scalars(query).one_or_none()
@@ -161,16 +165,18 @@ def update_workout_type(
 
 
 @router.delete("/", status_code=status.HTTP_200_OK, response_model=WorkoutTypeInDB)
-def delete_workout_type(
+def soft_delete_workout_type(
     id: UUID,
     session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
     current_user: db.User = Depends(get_current_user),
 ) -> db.WorkoutType:
+    """Soft-delete a workout type"""
     # Filter on ID and read permissions.
     query = (
         select(db.WorkoutType)
         .filter_by(id=id)
         .where(db.WorkoutType.readable_by(current_user))
+        .where(db.WorkoutType.not_soft_deleted())
     )
     with session_factory(expire_on_commit=False) as session:
         record = session.scalars(query).one_or_none()
@@ -183,19 +189,7 @@ def delete_workout_type(
                 status_code=401,
                 detail=f"you do not have permissions to update workout type with id '{id}'",
             )
-        stmt = (
-            delete(db.WorkoutType)
-            .where(db.WorkoutType.id == record.id)
-            .returning(db.WorkoutType)
-        )
-        result = session.scalar(stmt)
+        record.deleted_at = datetime.now()
         session.commit()
-        if result is None:
-            # It's unlikely that we could get here, since we already checked for the
-            # presence of this resource above, but it is possible the db could change in
-            # the time since.
-            raise HTTPException(
-                status_code=404, detail=f"workout type with id '{id}' not found"
-            )
 
-    return result
+    return record

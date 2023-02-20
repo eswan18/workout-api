@@ -72,3 +72,8 @@ class WorkoutType(Base, ModificationTimesMixin):
     ) -> bool:
         """Determine if this workout type can be deleted by this user."""
         return self.owner == user
+
+    @classmethod
+    def not_soft_deleted(cls) -> ColumnElement[bool]:
+        """Build a filter for not-soft-deleted."""
+        return cls.deleted_at == None
