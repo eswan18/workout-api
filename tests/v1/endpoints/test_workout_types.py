@@ -148,3 +148,24 @@ def test_user_can_read_own_and_public_workout_types(
     assert len(workout_types) == (n_public_workout_types + n_private_workout_types)
     for workout_type in workout_types:
         assert workout_type["owner_user_id"] in (None, str(primary_test_user.user.id))
+
+
+def test_user_can_read_newly_written_workout_type(
+    client: TestClient,
+    primary_test_user: UserWithAuth,
+    postable_payload: dict[str, str],
+):
+    response = client.post(ROUTE, json=postable_payload, headers=primary_test_user.auth)
+    id = response.json()[0]["id"]
+    response = client.get(ROUTE + f'?id={id}', headers=primary_test_user.auth)
+    payload = response.json()
+    assert len(payload) == 1
+    assert payload[0]["id"] == id
+
+
+def test_filtering(
+    client: TestClient,
+    primary_test_user: UserWithAuth,
+    primary_user_workout_types: tuple[WorkoutType, WorkoutType],
+):
+    ...
