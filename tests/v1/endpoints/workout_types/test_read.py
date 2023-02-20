@@ -1,8 +1,5 @@
-from datetime import datetime
 from uuid import UUID
-from typing import Iterable
 
-import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.sql import select, delete
 from sqlalchemy.sql.functions import count
@@ -11,115 +8,8 @@ from sqlalchemy.orm import sessionmaker, Session
 from app.db.models.user import UserWithAuth
 from app.db import WorkoutType
 
+
 ROUTE = "/workout_types/"
-
-
-@pytest.fixture(scope="function")
-def postable_payload():
-    return {
-        "name": "Leg dayyyyy",
-        "notes": "this is the one you usually skip",
-    }
-
-
-@pytest.fixture(scope="function")
-def primary_user_workout_types(
-    session_factory: sessionmaker[Session], primary_test_user: UserWithAuth
-) -> Iterable[tuple[WorkoutType, ...]]:
-    """Add workout types to the db owned by the primary user."""
-    user_id = primary_test_user.user.id
-    with session_factory(expire_on_commit=False) as session:
-        wt1 = WorkoutType(
-            name="a new workout type 1",
-            owner_user_id=user_id,
-        )
-        session.add(wt1)
-        session.commit()
-        # Another workout, child of workout 1.
-        wt2 = WorkoutType(
-            name="a new workout type 2",
-            owner_user_id=user_id,
-            parent_workout_type_id=wt1.id,
-        )
-        session.add(wt2)
-        session.commit()
-
-    rows = (wt1, wt2)
-    yield rows
-
-    with session_factory() as session:
-        session.execute(
-            delete(WorkoutType).where(WorkoutType.id.in_(row.id for row in rows))
-        )
-        session.commit()
-
-
-@pytest.fixture(scope="function")
-def primary_user_soft_deleted_workout_type(
-    session_factory: sessionmaker[Session], primary_test_user: UserWithAuth
-) -> Iterable[WorkoutType]:
-    """Add a soft-deleted workout type to the db owned by the primary user."""
-    user_id = primary_test_user.user.id
-    with session_factory(expire_on_commit=False) as session:
-        sd_wt = WorkoutType(
-            name="a deleted workout type",
-            owner_user_id=user_id,
-            deleted_at=datetime(year=2023, month=1, day=1),
-        )
-        session.add(sd_wt)
-        session.commit()
-
-    yield sd_wt
-
-    with session_factory() as session:
-        session.execute(delete(WorkoutType).where(WorkoutType.id == sd_wt.id))
-        session.commit()
-
-
-#########
-# Creates
-#########
-
-
-def test_unauthenticated_user_cant_create_workout_types(
-    client: TestClient, postable_payload: dict[str, str]
-):
-    # No creds
-    response = client.post(ROUTE, json=postable_payload)
-    assert response.status_code == 401
-    # Wrong creds
-    response = client.post(
-        ROUTE, json=postable_payload, headers={"Authorization": "Bearer 123456"}
-    )
-    assert response.status_code == 401
-
-
-def test_authenticated_user_can_create_workout_types(
-    client: TestClient,
-    primary_test_user: UserWithAuth,
-    postable_payload: dict[str, str],
-    session_factory: sessionmaker[Session],
-):
-    response = client.post(ROUTE, json=postable_payload, headers=primary_test_user.auth)
-    assert response.status_code == 201
-    # Make sure we get the resource back.
-    payload = response.json()
-    assert len(payload) == 1
-    resource = payload[0]
-    assert "id" in resource
-
-    # Clean up and make sure that record was in the db.
-    with session_factory() as session:
-        result = session.execute(
-            delete(WorkoutType).where(WorkoutType.id == UUID(resource["id"]))
-        )
-        session.commit()
-        assert result.rowcount == 1
-
-
-#########
-# Reads
-#########
 
 
 def test_unauthenticated_user_cant_read(
