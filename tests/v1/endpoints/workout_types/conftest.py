@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Iterable
+from typing import Iterator
 
 from sqlalchemy.sql import delete
 from sqlalchemy.orm import sessionmaker, Session
@@ -20,7 +20,7 @@ def postable_payload():
 @pytest.fixture(scope="function")
 def primary_user_workout_types(
     session_factory: sessionmaker[Session], primary_test_user: UserWithAuth
-) -> Iterable[tuple[WorkoutType, ...]]:
+) -> Iterator[tuple[WorkoutType, ...]]:
     """Add workout types to the db owned by the primary user."""
     user_id = primary_test_user.user.id
     with session_factory(expire_on_commit=False) as session:
@@ -52,7 +52,7 @@ def primary_user_workout_types(
 @pytest.fixture(scope="function")
 def primary_user_soft_deleted_workout_type(
     session_factory: sessionmaker[Session], primary_test_user: UserWithAuth
-) -> Iterable[WorkoutType]:
+) -> Iterator[WorkoutType]:
     """Add a soft-deleted workout type to the db owned by the primary user."""
     user_id = primary_test_user.user.id
     with session_factory(expire_on_commit=False) as session:
@@ -74,7 +74,7 @@ def primary_user_soft_deleted_workout_type(
 @pytest.fixture(scope="function")
 def public_workout_type(
     session_factory: sessionmaker[Session],
-) -> Iterable[WorkoutType]:
+) -> Iterator[WorkoutType]:
     """Add a public workout type to the db."""
     with session_factory(expire_on_commit=False) as session:
         wt = WorkoutType(
