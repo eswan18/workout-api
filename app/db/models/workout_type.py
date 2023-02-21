@@ -64,14 +64,16 @@ class WorkoutType(Base, ModificationTimesMixin):
         user: User,
     ) -> bool:
         """Determine if this workout type can be updated by this user."""
-        return self.owner == user
+        # n.b. Comparing (self.owner == user) doesn't work; I haven't figured out why.
+        return self.owner_user_id == user.id
 
     def deleteable_by(
         self,
         user: User,
     ) -> bool:
         """Determine if this workout type can be deleted by this user."""
-        return self.owner == user
+        # n.b. Comparing (self.owner == user) doesn't work; I haven't figured out why.
+        return self.owner_user_id == user.id
 
     @classmethod
     def not_soft_deleted(cls) -> ColumnElement[bool]:
