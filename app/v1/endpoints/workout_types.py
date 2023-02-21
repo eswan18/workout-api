@@ -134,6 +134,8 @@ def update_workout_type(
     session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
     current_user: db.User = Depends(get_current_user),
 ) -> db.WorkoutType:
+    # I'll come back to this later but PUT alone is enough for MVP.
+    raise HTTPException(status_code=501, detail="Patch endpoints not implemented yet.")
     # Filter on ID and read permissions.
     query = (
         select(db.WorkoutType)
