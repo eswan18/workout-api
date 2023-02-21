@@ -1,4 +1,4 @@
-FROM python:3.10-bullseye
+FROM python:3.11-bullseye
  
 RUN useradd -ms /bin/bash workout-api
 USER workout-api
