@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID
 
 from pydantic.fields import Undefined, UndefinedType
@@ -191,7 +191,7 @@ def soft_delete_workout_type(
                 status_code=401,
                 detail=f"you do not have permissions to update workout type with id '{id}'",
             )
-        record.deleted_at = datetime.now()
+        record.deleted_at = datetime.now(tz=timezone.utc)
         session.commit()
 
     return record
