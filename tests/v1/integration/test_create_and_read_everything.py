@@ -8,7 +8,6 @@ from sqlalchemy.orm import sessionmaker, Session
 from app.db.utils import recursive_hard_delete
 
 from fastapi.testclient import TestClient
-from app.db.database import get_session_factory_sync
 
 
 USER_CREATION_SECRET = os.environ["USER_CREATION_SECRET"]
