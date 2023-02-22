@@ -30,7 +30,7 @@ def primary_user_workout_types(
         )
         session.add(wt1)
         session.commit()
-        # Another workout, child of workout 1.
+        # Another workout, child of workout type 1.
         wt2 = WorkoutType(
             name="a new workout type 2",
             owner_user_id=user_id,
