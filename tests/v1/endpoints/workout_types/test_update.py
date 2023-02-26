@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.sql import select
 from fastapi.testclient import TestClient
@@ -50,3 +52,26 @@ def test_authenticated_user_can_update(
         assert record.parent_workout_type_id is None
         # Hacky way to confirm that the updated_at field was changed.
         assert record.updated_at > record.created_at
+
+
+def test_invalid_parent_id_is_rejected(
+    client: TestClient,
+    primary_test_user: UserWithAuth,
+    postable_payload: dict[str, str],
+    session_factory: sessionmaker[Session],
+    primary_user_workout_types: tuple[WorkoutType, ...],
+):
+    wt1 = primary_user_workout_types[0]
+    wt1_id, wt1_name = wt1.id, wt1.name
+    payload = postable_payload.copy()
+    parent_id = uuid4()
+    payload["parent_workout_type_id"] = str(parent_id)
+    response = client.put(
+        ROUTE, params={"id": wt1_id}, json=payload, headers=primary_test_user.auth
+    )
+    assert response.status_code == 400
+    with session_factory() as session:
+        # Confirm that the record wasn't modified.
+        query = select(WorkoutType).where(WorkoutType.id == wt1.id)
+        record = session.execute(query).scalars().one()
+        assert record.name == wt1_name
