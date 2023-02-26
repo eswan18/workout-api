@@ -1,7 +1,7 @@
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from fastapi.testclient import TestClient
-from sqlalchemy.sql import delete
+from sqlalchemy.sql import select, delete
 from sqlalchemy.orm import sessionmaker, Session
 
 from app.db.models.user import UserWithAuth
@@ -45,3 +45,23 @@ def test_authenticated_user_can_create_workout_types(
         )
         session.commit()
         assert result.rowcount == 1
+
+
+def test_invalid_parent_id_is_rejected(
+    client: TestClient,
+    primary_test_user: UserWithAuth,
+    postable_payload: dict[str, str],
+    session_factory: sessionmaker[Session],
+):
+    payload = postable_payload.copy()
+    parent_id = uuid4()
+    payload["parent_workout_type_id"] = str(parent_id)
+    response = client.post(ROUTE, json=payload, headers=primary_test_user.auth)
+    assert response.status_code == 400
+    with session_factory() as session:
+        # Confirm that no record was added to the database.
+        query = select(WorkoutType).where(
+            WorkoutType.parent_workout_type_id == parent_id
+        )
+        record = session.execute(query).scalar()
+        assert record is None
