@@ -11,6 +11,7 @@ from psycopg2.errors import ForeignKeyViolation
 from app.v1.models.workout_type import WorkoutTypeIn, WorkoutTypeInDB
 from app.v1.auth import get_current_user
 from app import db
+from .error_handlers import handle_db_errors
 
 router = APIRouter(prefix="/workout_types")
 
@@ -61,17 +62,9 @@ def create_workout_type(
         db.WorkoutType(**wk.dict(), owner_user_id=current_user.id) for wk in wkt_tps
     ]
     with session_factory(expire_on_commit=False) as session:
-        session.add_all(records)
-        try:
+        with handle_db_errors(session):
+            session.add_all(records)
             session.commit()
-        except IntegrityError as exc:
-            original_error = exc.orig
-            if isinstance(original_error, ForeignKeyViolation):
-                msg = str(original_error)
-            else:
-                msg = str(exc.detail)
-            session.rollback()
-            raise HTTPException(status_code=400, detail=msg)
     return records
 
 
@@ -112,16 +105,9 @@ def overwrite_workout_type(
                 parent_workout_type_id=workout_type.parent_workout_type_id,
             )
         )
-        try:
+        with handle_db_errors(session):
             result = session.scalar(stmt)
-        except IntegrityError as exc:
-            original_error = exc.orig
-            if isinstance(original_error, ForeignKeyViolation):
-                msg = str(original_error)
-            else:
-                msg = str(exc.detail)
-            session.rollback()
-            raise HTTPException(status_code=400, detail=msg)
+            session.commit()
         if result is None:
             # It's unlikely that we could get here, since we already checked for the
             # presence of this resource above, but it is possible the db could change in
@@ -129,7 +115,6 @@ def overwrite_workout_type(
             raise HTTPException(
                 status_code=404, detail=f"workout type with id '{id}' not found"
             )
-        session.commit()
 
     return result
 
