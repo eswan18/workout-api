@@ -112,7 +112,16 @@ def overwrite_workout_type(
                 parent_workout_type_id=workout_type.parent_workout_type_id,
             )
         )
-        result = session.scalar(stmt)
+        try:
+            result = session.scalar(stmt)
+        except IntegrityError as exc:
+            original_error = exc.orig
+            if isinstance(original_error, ForeignKeyViolation):
+                msg = str(original_error)
+            else:
+                msg = str(exc.detail)
+            session.rollback()
+            raise HTTPException(status_code=400, detail=msg)
         if result is None:
             # It's unlikely that we could get here, since we already checked for the
             # presence of this resource above, but it is possible the db could change in
