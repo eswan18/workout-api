@@ -27,16 +27,9 @@ def workout_types(
     """
     Fetch workout types.
     """
-    param_filter = db.WorkoutType.param_filter(
-        id=id, name=name, owner_user_id=owner_user_id
+    query = db.WorkoutType.build_query(
+        current_user=current_user, id=id, name=name, owner_user_id=owner_user_id
     )
-    query = (
-        select(db.WorkoutType)
-        .where(param_filter)
-        .where(db.WorkoutType.readable_by(current_user))
-        .where(db.WorkoutType.not_soft_deleted())
-    )
-
     with session_factory() as session:
         result = session.scalars(query)
         return list(result)
@@ -76,12 +69,7 @@ def overwrite_workout_type(
     current_user: db.User = Depends(get_current_user),
 ) -> db.WorkoutType:
     # Filter on ID and read permissions.
-    query = (
-        select(db.WorkoutType)
-        .filter_by(id=id)
-        .where(db.WorkoutType.readable_by(current_user))
-        .where(db.WorkoutType.not_soft_deleted())
-    )
+    query = db.WorkoutType.build_query(current_user=current_user, id=id)
     with session_factory(expire_on_commit=False) as session:
         record = session.scalars(query).one_or_none()
         if record is None:
@@ -168,12 +156,7 @@ def soft_delete_workout_type(
 ) -> db.WorkoutType:
     """Soft-delete a workout type"""
     # Filter on ID and read permissions.
-    query = (
-        select(db.WorkoutType)
-        .filter_by(id=id)
-        .where(db.WorkoutType.readable_by(current_user))
-        .where(db.WorkoutType.not_soft_deleted())
-    )
+    query = db.WorkoutType.build_query(current_user=current_user, id=id)
     with session_factory(expire_on_commit=False) as session:
         record = session.scalars(query).one_or_none()
         if record is None:

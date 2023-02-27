@@ -10,6 +10,7 @@ from psycopg2.errors import ForeignKeyViolation
 from app.v1.models.workout import WorkoutIn, WorkoutInDB
 from app.v1.auth import get_current_user
 from app import db
+from .error_handlers import handle_db_errors
 
 router = APIRouter(prefix="/workouts")
 
@@ -65,15 +66,7 @@ def create_workout(
 
     records = [db.Workout(**wkt.dict(), user_id=current_user.id) for wkt in wkts]
     with session_factory(expire_on_commit=False) as session:
-        session.add_all(records)
-        try:
+        with handle_db_errors(session):
+            session.add_all(records)
             session.commit()
-        except IntegrityError as exc:
-            original_error = exc.orig
-            if isinstance(original_error, ForeignKeyViolation):
-                msg = str(original_error)
-            else:
-                msg = str(exc.detail)
-            session.rollback()
-            raise HTTPException(status_code=400, detail=msg)
     return records

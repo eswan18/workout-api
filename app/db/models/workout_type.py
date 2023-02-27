@@ -1,6 +1,8 @@
 import uuid
 
-from sqlalchemy.sql.elements import ColumnElement, BooleanClauseList, and_
+from typing_extensions import Self
+from sqlalchemy.sql.elements import ColumnElement, BooleanClauseList
+from sqlalchemy.sql import select, and_, Select
 from sqlalchemy.types import Text, UUID
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.orm import relationship, backref, Mapped, mapped_column
@@ -79,3 +81,24 @@ class WorkoutType(Base, ModificationTimesMixin):
     def not_soft_deleted(cls) -> ColumnElement[bool]:
         """Build a filter for not-soft-deleted."""
         return cls.deleted_at == None
+
+    @classmethod
+    def build_query(
+        cls,
+        current_user: User,
+        id: uuid.UUID | None = None,
+        name: str | None = None,
+        owner_user_id: uuid.UUID | None = None,
+        include_soft_deleted: bool = False,
+    ) -> Select[tuple[Self]]:
+        """
+        Build a query to filter all the resources accessible to this user.
+        """
+        query = (
+            select(cls)
+            .where(cls.param_filter(id=id, name=name, owner_user_id=owner_user_id))
+            .where(cls.readable_by(current_user))
+        )
+        if not include_soft_deleted:
+            query = query.where(cls.not_soft_deleted())
+        return query
