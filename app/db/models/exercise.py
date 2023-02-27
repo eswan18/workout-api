@@ -14,7 +14,7 @@ from .exercise_type import ExerciseType
 
 
 class Exercise(Base, ModificationTimesMixin):
-    __tablename__ = "sets"
+    __tablename__ = "exercises"
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
