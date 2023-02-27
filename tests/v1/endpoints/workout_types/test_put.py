@@ -75,3 +75,28 @@ def test_invalid_parent_id_is_rejected(
         query = select(WorkoutType).where(WorkoutType.id == wt1.id)
         record = session.execute(query).scalars().one()
         assert record.name == wt1_name
+
+
+def test_partial_payload_is_rejected(
+    client: TestClient,
+    primary_test_user: UserWithAuth,
+    postable_payload: dict[str, str],
+    session_factory: sessionmaker[Session],
+    primary_user_workout_types: tuple[WorkoutType, ...],
+):
+    """
+    Omitting mandatory fields of a workout type results in a 401.
+    """
+    wt1 = primary_user_workout_types[0]
+    wt1_id, wt1_notes = wt1.id, wt1.notes
+    payload = postable_payload.copy()
+    del payload["name"]
+    response = client.put(
+        ROUTE, params={"id": wt1_id}, json=payload, headers=primary_test_user.auth
+    )
+    assert response.status_code == 422
+    with session_factory() as session:
+        # Confirm that the record wasn't modified.
+        query = select(WorkoutType).where(WorkoutType.id == wt1.id)
+        record = session.execute(query).scalars().one()
+        assert record.notes == wt1_notes
