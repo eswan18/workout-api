@@ -7,15 +7,15 @@ from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.exc import IntegrityError
 from psycopg2.errors import ForeignKeyViolation
 
-from app.v1.models.set import SetIn, SetInDB
+from app.v1.models.exercise import ExerciseIn, ExerciseInDB
 from app.v1.auth import get_current_user
 from app import db
 
-router = APIRouter(prefix="/sets")
+router = APIRouter(prefix="/exercises")
 
 
-@router.get("/", response_model=list[SetInDB])
-def read_sets(
+@router.get("/", response_model=list[ExerciseInDB])
+def read_exercises(
     id: UUID | None = None,
     exercise_type_id: UUID | None = None,
     workout_id: UUID | None = None,
@@ -25,7 +25,7 @@ def read_sets(
     current_user: db.User = Depends(get_current_user),
 ) -> list[db.Set]:
     """
-    Fetch sets.
+    Fetch exercises.
     """
     param_filter = db.Set.param_filter(
         id=id,
@@ -41,21 +41,21 @@ def read_sets(
         return list(result)
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=list[SetInDB])
-def create_sets(
-    set_: SetIn | list[SetIn],
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=list[ExerciseInDB])
+def create_exercises(
+    exercise: ExerciseIn | list[ExerciseIn],
     session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
     current_user: db.User = Depends(get_current_user),
 ) -> list[db.Set]:
     """
-    Create a new set or sets.
+    Create a new exercise or exercises.
     """
-    if not isinstance(set_, list):
-        sets = [set_]
+    if not isinstance(exercise, list):
+        exercises = [exercise]
     else:
-        sets = set_
+        exercises = exercise
 
-    records = [db.Set(**s.dict(), user_id=current_user.id) for s in sets]
+    records = [db.Set(**s.dict(), user_id=current_user.id) for s in exercises]
     with session_factory(expire_on_commit=False) as session:
         session.add_all(records)
         try:

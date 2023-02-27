@@ -64,7 +64,7 @@ def test_flow(client: TestClient, session_factory: sessionmaker[Session]):
     ###################################################################################
     # You shouldn't have any personal resources, but should be able to see shared ones.
     ###################################################################################
-    personal_resource_endpoints = ["/sets/", "/workouts/"]
+    personal_resource_endpoints = ["/exercises/", "/workouts/"]
     for endpoint in personal_resource_endpoints:
         response = client.get(endpoint, headers=auth_header)
         assert response.status_code == 200
@@ -137,9 +137,9 @@ def test_flow(client: TestClient, session_factory: sessionmaker[Session]):
         "owner_user_id": my_id,
     }
 
-    ##################################################
-    # Create a new workout and a couple of sets in it.
-    ##################################################
+    #######################################################
+    # Create a new workout and a couple of exercises in it.
+    #######################################################
     new_workout = {
         "start_time": datetime(
             year=2023,
@@ -179,7 +179,7 @@ def test_flow(client: TestClient, session_factory: sessionmaker[Session]):
         "notes": None,
     }
 
-    new_sets = [
+    new_exercises = [
         {
             "start_time": datetime(
                 year=2023,
@@ -212,17 +212,17 @@ def test_flow(client: TestClient, session_factory: sessionmaker[Session]):
         },
     ]
 
-    set_ids = []
-    response = client.post("/sets/", headers=auth_header, json=new_sets)
+    exercise_ids = []
+    response = client.post("/exercises/", headers=auth_header, json=new_exercises)
     assert response.status_code == 201
     response_payload = response.json()
-    set_ids = [p["id"] for p in response_payload]
+    exercise_ids = [p["id"] for p in response_payload]
     # Fetch them
-    response = client.get("/sets", headers=auth_header, params={"user_id": my_id})
+    response = client.get("/exercises/", headers=auth_header, params={"user_id": my_id})
     assert response.status_code == 200
     response_payload = response.json()
     assert len(response_payload) == 2
-    assert set(record["id"] for record in response_payload) == set(set_ids)
+    assert set(record["id"] for record in response_payload) == set(exercise_ids)
 
     # Clean up.
     recursive_hard_delete(UUID(my_id), session_factory)

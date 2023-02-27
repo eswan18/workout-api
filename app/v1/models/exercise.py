@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from app.db.models import Set
 
 
-class SetIn(BaseModel):
+class ExerciseIn(BaseModel):
     start_time: datetime | None
     weight: float
     weight_unit: str | None
@@ -47,7 +47,7 @@ class SetIn(BaseModel):
         model.workout_id = self.workout_id
 
 
-class SetInDB(SetIn):
+class ExerciseInDB(ExerciseIn):
     id: UUID
     user_id: UUID
 
