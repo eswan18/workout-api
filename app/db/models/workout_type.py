@@ -86,6 +86,7 @@ class WorkoutType(Base, ModificationTimesMixin):
     def build_query(
         cls,
         current_user: User,
+        *,
         id: uuid.UUID | None = None,
         name: str | None = None,
         owner_user_id: uuid.UUID | None = None,
