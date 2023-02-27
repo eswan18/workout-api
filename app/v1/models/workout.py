@@ -23,6 +23,7 @@ class WorkoutIn(BaseModel):
             status=self.status,
             notes=self.notes,
             workout_type_id=self.workout_type_id,
+            user_id=user_id,
         )
 
     def update_orm_model(self, model: Workout) -> None:

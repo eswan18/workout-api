@@ -14,7 +14,7 @@ router = APIRouter(prefix="/workout_types")
 
 
 @router.get("/", response_model=list[WorkoutTypeInDB])
-def workout_types(
+def read_workout_types(
     id: UUID | None = None,
     name: str | None = None,
     owner_user_id: UUID | None = None,
@@ -122,7 +122,7 @@ def update_workout_type(
 
 
 @router.delete("/", status_code=status.HTTP_200_OK, response_model=WorkoutTypeInDB)
-def soft_delete_workout_type(
+def delete_workout_type(
     id: UUID,
     session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
     current_user: db.User = Depends(get_current_user),

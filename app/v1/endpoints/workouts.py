@@ -2,7 +2,6 @@ from uuid import UUID
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.sql import select
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.v1.models.workout import WorkoutIn, WorkoutInDB
@@ -14,7 +13,7 @@ router = APIRouter(prefix="/workouts")
 
 
 @router.get("/", response_model=list[WorkoutInDB])
-def workouts(
+def read_workouts(
     id: UUID | None = None,
     status: str | None = None,
     workout_type_id: UUID | None = None,
@@ -28,7 +27,8 @@ def workouts(
     """
     Fetch workouts.
     """
-    param_filter = db.Workout.param_filter(
+    query = db.Workout.query(
+        current_user=current_user,
         id=id,
         status=status,
         workout_type_id=workout_type_id,
@@ -37,12 +37,6 @@ def workouts(
         min_end_time=min_end_time,
         max_end_time=max_end_time,
     )
-    query = (
-        select(db.Workout)
-        .where(param_filter)
-        .where(db.Workout.readable_by(current_user))
-    )
-
     with session_factory() as session:
         result = session.scalars(query)
         return list(result)
@@ -62,7 +56,7 @@ def create_workout(
     else:
         wkts = workout
 
-    records = [db.Workout(**wkt.dict(), user_id=current_user.id) for wkt in wkts]
+    records = [wkt.to_orm_model(user_id=current_user.id) for wkt in wkts]
     with session_factory(expire_on_commit=False) as session:
         with handle_db_errors(session):
             session.add_all(records)
