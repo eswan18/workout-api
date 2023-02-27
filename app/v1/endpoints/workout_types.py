@@ -4,9 +4,7 @@ from uuid import UUID
 from pydantic.fields import Undefined, UndefinedType
 from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.sql import select, update
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
-from psycopg2.errors import ForeignKeyViolation
 
 from app.v1.models.workout_type import WorkoutTypeIn, WorkoutTypeInDB
 from app.v1.auth import get_current_user

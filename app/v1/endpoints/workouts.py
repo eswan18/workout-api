@@ -1,11 +1,9 @@
 from uuid import UUID
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.sql import select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
-from psycopg2.errors import ForeignKeyViolation
 
 from app.v1.models.workout import WorkoutIn, WorkoutInDB
 from app.v1.auth import get_current_user

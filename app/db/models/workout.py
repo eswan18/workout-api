@@ -97,7 +97,6 @@ class Workout(Base, ModificationTimesMixin):
         """Build a filter for not-soft-deleted."""
         return cls.deleted_at == None
 
-
     @classmethod
     def build_query(
         cls,
@@ -118,10 +117,18 @@ class Workout(Base, ModificationTimesMixin):
         """
         query = (
             select(cls)
-            .where(cls.param_filter(
-                id=id, status=status, workout_type_id=workout_type_id, user_id=user_id,
-                min_start_time=min_start_time, max_start_time=max_start_time, min_end_time=min_end_time, max_end_time=max_end_time,
-            ))
+            .where(
+                cls.param_filter(
+                    id=id,
+                    status=status,
+                    workout_type_id=workout_type_id,
+                    user_id=user_id,
+                    min_start_time=min_start_time,
+                    max_start_time=max_start_time,
+                    min_end_time=min_end_time,
+                    max_end_time=max_end_time,
+                )
+            )
             .where(cls.readable_by(current_user))
         )
         if not include_soft_deleted:
