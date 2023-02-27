@@ -1,5 +1,5 @@
 from . import exercise_types
-from . import sets
+from . import exercises
 from . import workouts
 from . import workout_types
 from . import users
@@ -10,7 +10,7 @@ routers = {
     "Token": token.router,
     "Users": users.router,
     "Exercise Types": exercise_types.router,
-    "Sets": sets.router,
+    "Exercises": exercises.router,
     "Workouts": workouts.router,
     "Workout Types": workout_types.router,
 }

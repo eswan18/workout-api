@@ -13,7 +13,7 @@ from .workout import Workout
 from .exercise_type import ExerciseType
 
 
-class Set(Base, ModificationTimesMixin):
+class Exercise(Base, ModificationTimesMixin):
     __tablename__ = "sets"
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -36,9 +36,9 @@ class Set(Base, ModificationTimesMixin):
         UUID(as_uuid=True), ForeignKey("users.id")
     )
     # Relationships
-    exercise_type: Mapped[ExerciseType] = relationship("ExerciseType", backref="sets")
-    workout: Mapped[Workout] = relationship("Workout", backref="sets")
-    user: Mapped[User] = relationship("User", backref="sets")
+    exercise_type: Mapped[ExerciseType] = relationship("ExerciseType", backref="exercises")
+    workout: Mapped[Workout] = relationship("Workout", backref="exercises")
+    user: Mapped[User] = relationship("User", backref="exercises")
 
     @classmethod
     def param_filter(
@@ -72,5 +72,5 @@ class Set(Base, ModificationTimesMixin):
         cls,
         user: User,
     ) -> ColumnElement[bool]:
-        """Build a filter for sets this user can read."""
+        """Build a filter for exercises this user can read."""
         return cls.user == user

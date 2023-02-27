@@ -1,5 +1,5 @@
 from .database import Base, get_session, get_session_factory
-from .models import ExerciseType, Set, User, Workout, WorkoutType
+from .models import ExerciseType, Exercise, User, Workout, WorkoutType
 
 
 __all__ = [
@@ -7,7 +7,7 @@ __all__ = [
     "ExerciseType",
     "get_session",
     "get_session_factory",
-    "Set",
+    "Exercise",
     "User",
     "Workout",
     "WorkoutType",

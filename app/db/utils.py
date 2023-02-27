@@ -3,7 +3,7 @@ from uuid import UUID
 from sqlalchemy.sql import delete
 from sqlalchemy.orm import sessionmaker, Session
 
-from .models import Set, ExerciseType, Workout, WorkoutType, User
+from .models import Exercise, ExerciseType, Workout, WorkoutType, User
 
 
 def recursive_hard_delete(
@@ -20,7 +20,7 @@ def recursive_hard_delete(
 
         # Order matters -- we need to delete tables with foreign keys first.
         stmts = [
-            delete(Set).where(Set.user_id == user_id),
+            delete(Exercise).where(Exercise.user_id == user_id),
             delete(ExerciseType).where(ExerciseType.owner_user_id == user_id),
             delete(Workout).where(Workout.user_id == user_id),
             delete(WorkoutType).where(WorkoutType.owner_user_id == user_id),

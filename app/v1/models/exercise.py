@@ -3,7 +3,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from app.db.models import Set
+from app.db.models import Exercise
 
 
 class ExerciseIn(BaseModel):
@@ -17,11 +17,11 @@ class ExerciseIn(BaseModel):
     exercise_type_id: UUID
     workout_id: UUID
 
-    def to_orm_model(self, user_id: UUID | None) -> Set:
+    def to_orm_model(self, user_id: UUID | None) -> Exercise:
         """
         Convert to a sqlalchemy model object.
         """
-        return Set(
+        return Exercise(
             start_time=self.start_time,
             weight=self.weight,
             weight_unit=self.weight_unit,
@@ -33,7 +33,7 @@ class ExerciseIn(BaseModel):
             user_id=user_id,
         )
 
-    def update_orm_model(self, model: Set) -> None:
+    def update_orm_model(self, model: Exercise) -> None:
         """
         Update a sqlalchemy object in-place with these values.
         """

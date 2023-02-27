@@ -23,18 +23,18 @@ def read_exercises(
     max_start_time: datetime | None = None,
     session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
     current_user: db.User = Depends(get_current_user),
-) -> list[db.Set]:
+) -> list[db.Exercise]:
     """
     Fetch exercises.
     """
-    param_filter = db.Set.param_filter(
+    param_filter = db.Exercise.param_filter(
         id=id,
         exercise_type_id=exercise_type_id,
         workout_id=workout_id,
         min_start_time=min_start_time,
         max_start_time=max_start_time,
     )
-    query = select(db.Set).where(param_filter).where(db.Set.readable_by(current_user))
+    query = select(db.Exercise).where(param_filter).where(db.Exercise.readable_by(current_user))
 
     with session_factory() as session:
         result = session.scalars(query)
@@ -46,7 +46,7 @@ def create_exercises(
     exercise: ExerciseIn | list[ExerciseIn],
     session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
     current_user: db.User = Depends(get_current_user),
-) -> list[db.Set]:
+) -> list[db.Exercise]:
     """
     Create a new exercise or exercises.
     """
@@ -55,7 +55,7 @@ def create_exercises(
     else:
         exercises = exercise
 
-    records = [db.Set(**s.dict(), user_id=current_user.id) for s in exercises]
+    records = [db.Exercise(**s.dict(), user_id=current_user.id) for s in exercises]
     with session_factory(expire_on_commit=False) as session:
         session.add_all(records)
         try:
