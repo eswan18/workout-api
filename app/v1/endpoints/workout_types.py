@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 from uuid import UUID
 
-from pydantic.fields import Undefined, UndefinedType
 from fastapi import APIRouter, Depends, HTTPException, status, Body
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -9,6 +8,7 @@ from app.v1.models.workout_type import WorkoutTypeIn, WorkoutTypeInDB
 from app.v1.auth import get_current_user
 from app import db
 from .error_handlers import handle_db_errors
+from app.unset import _Unset, _unset
 
 router = APIRouter(prefix="/workout_types")
 
@@ -87,9 +87,9 @@ def overwrite_workout_type(
 @router.patch("/", status_code=status.HTTP_200_OK, response_model=WorkoutTypeInDB)
 def update_workout_type(
     id: UUID,
-    name: str = Body(Undefined),
-    notes: str | None = Body(Undefined),
-    parent_workout_type_id: UUID | None = Body(Undefined),
+    name: str = Body(_unset),
+    notes: str | None = Body(_unset),
+    parent_workout_type_id: UUID | None = Body(_unset),
     session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
     current_user: db.User = Depends(get_current_user),
 ) -> db.WorkoutType:
@@ -107,11 +107,11 @@ def update_workout_type(
                 detail=f"you do not have permissions to update workout type with id '{id}'",
             )
 
-        if not isinstance(name, UndefinedType):
+        if not isinstance(name, _Unset):
             record.name = name
-        if not isinstance(notes, UndefinedType):
+        if not isinstance(notes, _Unset):
             record.notes = notes
-        if not isinstance(parent_workout_type_id, UndefinedType):
+        if not isinstance(parent_workout_type_id, _Unset):
             record.parent_workout_type_id = parent_workout_type_id
 
         with handle_db_errors(session):

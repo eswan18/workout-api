@@ -17,10 +17,10 @@ def test_unauthenticated_user_cant_update(
 ):
     wt1 = primary_user_workout_types[0]
     # No creds
-    response = client.put(ROUTE, params={"id": wt1.id}, json=postable_payload)
+    response = client.patch(ROUTE, params={"id": wt1.id}, json=postable_payload)
     assert response.status_code == 401
     # Wrong creds
-    response = client.put(
+    response = client.patch(
         ROUTE, json=postable_payload, headers={"Authorization": "Bearer 123456"}
     )
     assert response.status_code == 401
@@ -34,7 +34,7 @@ def test_authenticated_user_can_update(
     session_factory: sessionmaker[Session],
 ):
     wt1 = primary_user_workout_types[0]
-    response = client.put(
+    response = client.patch(
         ROUTE,
         params={"id": wt1.id},
         json=postable_payload,
@@ -66,7 +66,7 @@ def test_invalid_parent_id_is_rejected(
     payload = postable_payload.copy()
     parent_id = uuid4()
     payload["parent_workout_type_id"] = str(parent_id)
-    response = client.put(
+    response = client.patch(
         ROUTE, params={"id": wt1_id}, json=payload, headers=primary_test_user.auth
     )
     assert response.status_code == 400
@@ -77,7 +77,7 @@ def test_invalid_parent_id_is_rejected(
         assert record.name == wt1_name
 
 
-def test_partial_payload_is_rejected(
+def test_partial_payload_is_accepted(
     client: TestClient,
     primary_test_user: UserWithAuth,
     postable_payload: dict[str, str],
@@ -85,17 +85,18 @@ def test_partial_payload_is_rejected(
     primary_user_workout_types: tuple[WorkoutType, ...],
 ):
     """
-    Omitting mandatory fields of a workout type results in a 401.
+    Omitting mandatory fields of a workout type is fine on PATCH.
     """
     wt1 = primary_user_workout_types[0]
-    wt1_id, wt1_notes = wt1.id, wt1.notes
     payload = {"notes": postable_payload["notes"]}
-    response = client.put(
-        ROUTE, params={"id": wt1_id}, json=payload, headers=primary_test_user.auth
+    response = client.patch(
+        ROUTE, params={"id": wt1.id}, json=payload, headers=primary_test_user.auth
     )
-    assert response.status_code == 422
+    print(">>>> here")
+    print(response.json())
+    assert response.status_code == 200
     with session_factory() as session:
-        # Confirm that the record wasn't modified.
+        # Confirm that the record was modified.
         query = select(WorkoutType).where(WorkoutType.id == wt1.id)
         record = session.execute(query).scalars().one()
-        assert record.notes == wt1_notes
+        assert record.notes == payload["notes"]
