@@ -2,7 +2,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from app.db.models import WorkoutType as WorkoutType
+from app.db.models import WorkoutType
 
 
 class WorkoutTypeIn(BaseModel):
