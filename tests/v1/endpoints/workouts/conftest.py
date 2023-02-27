@@ -10,6 +10,16 @@ from app.db import WorkoutType, Workout
 
 
 @pytest.fixture(scope="function")
+def postable_payload():
+    return {
+        "start_time": "2022-01-01T9:30:00",
+        "end_time": None,
+        "status": "started",
+        "workout_type_id": None,
+    }
+
+
+@pytest.fixture(scope="function")
 def primary_user_workouts(
     session_factory: sessionmaker[Session], primary_test_user: UserWithAuth
 ) -> Iterator[tuple[Workout, ...]]:
