@@ -142,6 +142,7 @@ def soft_delete_workout_type(
                 detail=f"you do not have permissions to update workout type with id '{id}'",
             )
         record.deleted_at = datetime.now(tz=timezone.utc)
-        session.commit()
+        with handle_db_errors(session):
+            session.commit()
 
     return record
