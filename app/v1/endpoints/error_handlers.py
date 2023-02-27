@@ -2,7 +2,7 @@ from typing import Literal
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from psycopg2.errors import ForeignKeyViolation
+from psycopg2.errors import ForeignKeyViolation, NotNullViolation
 from fastapi import HTTPException
 
 
@@ -42,10 +42,14 @@ class handle_db_errors:
 
         if isinstance(exc_value, IntegrityError):
             original_error = exc_value.orig
-            if isinstance(original_error, ForeignKeyViolation):
-                msg = str(original_error)
-            else:
-                msg = str(exc_value.detail)
+            msg = None
+            match original_error:
+                case ForeignKeyViolation():
+                    msg = str(original_error)
+                case NotNullViolation():
+                    msg = str(original_error)
+                case _:
+                    return None
             return HTTPException(status_code=400, detail=msg)
 
         return None
