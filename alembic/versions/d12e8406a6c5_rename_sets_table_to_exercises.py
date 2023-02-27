@@ -20,6 +20,7 @@ constraint_name_changes = [
     ("sets_user_id_fkey", "exercises_user_id_fkey"),
     ("sets_workout_id_fkey", "exercises_workout_id_fkey"),
 ]
+index_name_change = ("sets_pkey", "exercises_pkey")
 
 
 def upgrade() -> None:
@@ -29,10 +30,14 @@ def upgrade() -> None:
         rename_clause = f"RENAME CONSTRAINT {old_name} TO {new_name}"
         stmt = sa.text(f"ALTER TABLE EXERCISES {rename_clause}")
         op.execute(stmt)
+    stmt = f"ALTER INDEX {index_name_change[0]} RENAME TO {index_name_change[1]}"
+    op.execute(stmt)
 
 
 def downgrade() -> None:
     # Written by Ethan
+    stmt = f"ALTER INDEX {index_name_change[1]} RENAME TO {index_name_change[0]}"
+    op.execute(stmt)
     for new_name, old_name in reversed(constraint_name_changes):
         rename_clause = f"RENAME CONSTRAINT {old_name} TO {new_name}"
         stmt = sa.text(f"ALTER TABLE EXERCISES {rename_clause}")
