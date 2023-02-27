@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic.fields import Undefined, UndefinedType
 from fastapi import APIRouter, Depends, HTTPException, status, Body
-from sqlalchemy.sql import select, update
+from sqlalchemy.sql import select
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.v1.models.workout_type import WorkoutTypeIn, WorkoutTypeInDB
@@ -77,30 +77,12 @@ def overwrite_workout_type(
                 status_code=401,
                 detail=f"you do not have permissions to update workout type with id '{id}'",
             )
-
-        stmt = (
-            update(db.WorkoutType)
-            .returning(db.WorkoutType)
-            .filter_by(id=id)
-            .where(db.WorkoutType.readable_by(current_user))
-            .values(
-                name=workout_type.name,
-                notes=workout_type.notes,
-                parent_workout_type_id=workout_type.parent_workout_type_id,
-            )
-        )
+        # Update the record in-place.
+        workout_type.update_orm_model(record)
         with handle_db_errors(session):
-            result = session.scalar(stmt)
+            session.add(record)
             session.commit()
-        if result is None:
-            # It's unlikely that we could get here, since we already checked for the
-            # presence of this resource above, but it is possible the db could change in
-            # the time since.
-            raise HTTPException(
-                status_code=404, detail=f"workout type with id '{id}' not found"
-            )
-
-    return result
+    return record
 
 
 @router.patch("/", status_code=status.HTTP_200_OK, response_model=WorkoutTypeInDB)
