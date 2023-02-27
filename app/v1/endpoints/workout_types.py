@@ -42,16 +42,14 @@ def create_workout_type(
     current_user: db.User = Depends(get_current_user),
 ) -> list[db.WorkoutType]:
     """
-    Create a new workout type or workout types..
+    Create a new workout type or workout types.
     """
     if not isinstance(workout_type, list):
         wkt_tps = [workout_type]
     else:
         wkt_tps = workout_type
 
-    records = [
-        db.WorkoutType(**wk.dict(), owner_user_id=current_user.id) for wk in wkt_tps
-    ]
+    records = [wk_tp.to_orm_model(owner_user_id=current_user.id) for wk_tp in wkt_tps]
     with session_factory(expire_on_commit=False) as session:
         with handle_db_errors(session):
             session.add_all(records)
