@@ -36,7 +36,9 @@ class Exercise(Base, ModificationTimesMixin):
         UUID(as_uuid=True), ForeignKey("users.id")
     )
     # Relationships
-    exercise_type: Mapped[ExerciseType] = relationship("ExerciseType", backref="exercises")
+    exercise_type: Mapped[ExerciseType] = relationship(
+        "ExerciseType", backref="exercises"
+    )
     workout: Mapped[Workout] = relationship("Workout", backref="exercises")
     user: Mapped[User] = relationship("User", backref="exercises")
 

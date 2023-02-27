@@ -34,14 +34,20 @@ def read_exercises(
         min_start_time=min_start_time,
         max_start_time=max_start_time,
     )
-    query = select(db.Exercise).where(param_filter).where(db.Exercise.readable_by(current_user))
+    query = (
+        select(db.Exercise)
+        .where(param_filter)
+        .where(db.Exercise.readable_by(current_user))
+    )
 
     with session_factory() as session:
         result = session.scalars(query)
         return list(result)
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=list[ExerciseInDB])
+@router.post(
+    "/", status_code=status.HTTP_201_CREATED, response_model=list[ExerciseInDB]
+)
 def create_exercises(
     exercise: ExerciseIn | list[ExerciseIn],
     session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
