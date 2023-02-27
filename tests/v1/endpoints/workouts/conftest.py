@@ -12,7 +12,7 @@ from app.db import WorkoutType, Workout
 @pytest.fixture(scope="function")
 def postable_payload():
     return {
-        "start_time": "2022-01-01T9:30:00",
+        "start_time": "2022-01-01T09:30:00",
         "end_time": None,
         "status": "started",
         "workout_type_id": None,
