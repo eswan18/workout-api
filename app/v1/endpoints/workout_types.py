@@ -3,7 +3,6 @@ from uuid import UUID
 
 from pydantic.fields import Undefined, UndefinedType
 from fastapi import APIRouter, Depends, HTTPException, status, Body
-from sqlalchemy.sql import select
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.v1.models.workout_type import WorkoutTypeIn, WorkoutTypeInDB
@@ -94,15 +93,8 @@ def update_workout_type(
     session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
     current_user: db.User = Depends(get_current_user),
 ) -> db.WorkoutType:
-    # I'll come back to this later but PUT alone is enough for MVP.
-    raise HTTPException(status_code=501, detail="Patch endpoints not implemented yet.")
     # Filter on ID and read permissions.
-    query = (
-        select(db.WorkoutType)
-        .filter_by(id=id)
-        .where(db.WorkoutType.readable_by(current_user))
-        .where(db.WorkoutType.not_soft_deleted())
-    )
+    query = db.WorkoutType.build_query(current_user=current_user, id=id)
     with session_factory(expire_on_commit=False) as session:
         record = session.scalars(query).one_or_none()
         if record is None:
@@ -121,7 +113,10 @@ def update_workout_type(
             record.notes = notes
         if not isinstance(parent_workout_type_id, UndefinedType):
             record.parent_workout_type_id = parent_workout_type_id
-        session.commit()
+
+        with handle_db_errors(session):
+            session.add(record)
+            session.commit()
 
     return record
 
