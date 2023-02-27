@@ -53,3 +53,36 @@ def test_user_can_read_own_workouts(
     assert len(workouts) == len(primary_user_workouts)
     for workout in workouts:
         assert workout["user_id"] == str(primary_test_user.user.id)
+
+
+def test_filtering(
+    client: TestClient,
+    primary_test_user: UserWithAuth,
+    primary_user_workouts: tuple[Workout, ...],
+):
+    # Get by ID.
+    params = {"id": primary_user_workouts[0].id}
+    response = client.get(ROUTE, params=params, headers=primary_test_user.auth)
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload) == 1
+
+    # Get by status.
+    params = {"status": "started"}
+    response = client.get(ROUTE, params=params, headers=primary_test_user.auth)
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload) >= 1
+    for workout in payload:
+        assert workout["status"] == "started"
+
+    # Get by workout type.
+    params = {"workout_type_id": primary_user_workouts[0].workout_type_id}
+    response = client.get(ROUTE, params=params, headers=primary_test_user.auth)
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload) >= 1
+    for workout in payload:
+        assert workout["workout_type_id"] == str(
+            primary_user_workouts[0].workout_type_id
+        )
