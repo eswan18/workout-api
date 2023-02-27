@@ -83,7 +83,7 @@ class WorkoutType(Base, ModificationTimesMixin):
         return cls.deleted_at == None
 
     @classmethod
-    def build_query(
+    def query(
         cls,
         current_user: User,
         *,

@@ -92,8 +92,6 @@ def test_partial_payload_is_accepted(
     response = client.patch(
         ROUTE, params={"id": wt1.id}, json=payload, headers=primary_test_user.auth
     )
-    print(">>>> here")
-    print(response.json())
     assert response.status_code == 200
     with session_factory() as session:
         # Confirm that the record was modified.
