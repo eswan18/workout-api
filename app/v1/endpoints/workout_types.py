@@ -127,7 +127,7 @@ def delete_workout_type(
     session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
     current_user: db.User = Depends(get_current_user),
 ) -> db.WorkoutType:
-    """Soft-delete a workout type"""
+    """Soft-delete a workout type."""
     # Filter on ID and read permissions.
     query = db.WorkoutType.query(current_user=current_user, id=id)
     with session_factory(expire_on_commit=False) as session:
