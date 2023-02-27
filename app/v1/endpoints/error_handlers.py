@@ -1,9 +1,13 @@
+import logging
 from typing import Literal
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from psycopg2.errors import ForeignKeyViolation, NotNullViolation
 from fastapi import HTTPException
+
+
+logger = logging.getLogger(__name__)
 
 
 class handle_db_errors:
@@ -45,10 +49,13 @@ class handle_db_errors:
             msg = None
             match original_error:
                 case ForeignKeyViolation():
+                    logger.info(f"Catching and handling {original_error!r}")
                     msg = str(original_error)
                 case NotNullViolation():
+                    logger.info(f"Catching and handling {original_error!r}")
                     msg = str(original_error)
                 case _:
+                    logger.warning(f"Unable to catch {original_error!r}")
                     return None
             return HTTPException(status_code=400, detail=msg)
 
