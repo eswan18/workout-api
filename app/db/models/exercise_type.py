@@ -1,8 +1,10 @@
 import uuid
+from typing import Self
 
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.types import Integer, Text, UUID
-from sqlalchemy.sql.elements import BooleanClauseList, ColumnElement, and_
+from sqlalchemy.sql.elements import BooleanClauseList, ColumnElement
+from sqlalchemy.sql import Select, select, and_
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.db.database import Base
@@ -53,3 +55,46 @@ class ExerciseType(Base, ModificationTimesMixin):
         # Users can access exercise types that they own or that are public, denoted as a
         # null value in owner_user_id.
         return (cls.owner == user) | (cls.owner == None)
+
+    def updateable_by(
+        self,
+        user: User,
+    ) -> bool:
+        """Determine if this exercise type can be updated by this user."""
+        # n.b. Comparing (self.owner == user) doesn't work; I haven't figured out why.
+        return self.owner_user_id == user.id
+
+    def deleteable_by(
+        self,
+        user: User,
+    ) -> bool:
+        """Determine if this exercise type can be deleted by this user."""
+        # n.b. Comparing (self.owner == user) doesn't work; I haven't figured out why.
+        return self.owner_user_id == user.id
+
+    @classmethod
+    def not_soft_deleted(cls) -> ColumnElement[bool]:
+        """Build a filter for not-soft-deleted."""
+        return cls.deleted_at == None
+
+    @classmethod
+    def query(
+        cls,
+        current_user: User,
+        *,
+        id: uuid.UUID | None = None,
+        name: str | None = None,
+        owner_user_id: uuid.UUID | None = None,
+        include_soft_deleted: bool = False,
+    ) -> Select[tuple[Self]]:
+        """
+        Build a query to filter all the resources accessible to this user.
+        """
+        query = (
+            select(cls)
+            .where(cls.param_filter(id=id, name=name, owner_user_id=owner_user_id))
+            .where(cls.readable_by(current_user))
+        )
+        if not include_soft_deleted:
+            query = query.where(cls.not_soft_deleted())
+        return query
