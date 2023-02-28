@@ -1,14 +1,14 @@
 from uuid import UUID
+from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, status, HTTPException
-from sqlalchemy.sql import select
-from sqlalchemy.exc import IntegrityError
+from fastapi import APIRouter, Depends, status, HTTPException, Body
 from sqlalchemy.orm import sessionmaker, Session
-from psycopg2.errors import ForeignKeyViolation
 
 from app.v1.models.exercise_type import ExerciseTypeInDB, ExerciseTypeIn
 from app.v1.auth import get_current_user
 from app import db
+from .error_handlers import handle_db_errors
+from app.unset import _Unset, _unset
 
 router = APIRouter(prefix="/exercise_types")
 
@@ -24,15 +24,12 @@ def read_exercise_types(
     """
     Fetch exercise types.
     """
-    param_filter = db.ExerciseType.param_filter(
-        id=id, name=name, owner_user_id=owner_user_id
+    query = db.ExerciseType.query(
+        current_user=current_user,
+        id=id,
+        name=name,
+        owner_user_id=owner_user_id,
     )
-    query = (
-        select(db.ExerciseType)
-        .where(param_filter)
-        .where(db.ExerciseType.readable_by(current_user))
-    )
-
     with session_factory() as session:
         result = session.scalars(query)
         return list(result)
@@ -54,19 +51,101 @@ def create_exercise_types(
     else:
         ex_tps = exercise_type
 
-    records = [
-        db.ExerciseType(**ex.dict(), owner_user_id=current_user.id) for ex in ex_tps
-    ]
+    records = [ex_tp.to_orm_model(owner_user_id=current_user.id) for ex_tp in ex_tps]
     with session_factory(expire_on_commit=False) as session:
-        session.add_all(records)
-        try:
+        with handle_db_errors(session):
+            session.add_all(records)
             session.commit()
-        except IntegrityError as exc:
-            original_error = exc.orig
-            if isinstance(original_error, ForeignKeyViolation):
-                msg = str(original_error)
-            else:
-                msg = str(exc.detail)
-            session.rollback()
-            raise HTTPException(status_code=400, detail=msg)
     return records
+
+
+@router.put("/", status_code=status.HTTP_200_OK, response_model=ExerciseTypeInDB)
+def overwrite_exercise_type(
+    id: UUID,
+    exercise_type: ExerciseTypeIn,
+    session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
+    current_user: db.User = Depends(get_current_user),
+) -> db.ExerciseType:
+    # Filter on ID and read permissions.
+    query = db.ExerciseType.query(current_user=current_user, id=id)
+    with session_factory(expire_on_commit=False) as session:
+        record = session.scalars(query).one_or_none()
+        if record is None:
+            raise HTTPException(
+                status_code=404, detail=f"exercise type with id '{id}' not found"
+            )
+        if not record.updateable_by(current_user):
+            raise HTTPException(
+                status_code=401,
+                detail=f"you do not have permissions to update exercise type with id '{id}'",
+            )
+        # Update the record in-place.
+        exercise_type.update_orm_model(record)
+        with handle_db_errors(session):
+            session.add(record)
+            session.commit()
+    return record
+
+
+@router.patch("/", status_code=status.HTTP_200_OK, response_model=ExerciseTypeInDB)
+def update_exercise_type(
+    id: UUID,
+    name: str = Body(_unset),
+    number_of_weights: int = Body(_unset),
+    notes: str | None = Body(_unset),
+    session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
+    current_user: db.User = Depends(get_current_user),
+) -> db.ExerciseType:
+    # Filter on ID and read permissions.
+    query = db.ExerciseType.query(current_user=current_user, id=id)
+    with session_factory(expire_on_commit=False) as session:
+        record = session.scalars(query).one_or_none()
+        if record is None:
+            raise HTTPException(
+                status_code=404, detail=f"exercise type with id '{id}' not found"
+            )
+        if not record.updateable_by(current_user):
+            raise HTTPException(
+                status_code=401,
+                detail=f"you do not have permissions to update exercise type with id '{id}'",
+            )
+
+        if not isinstance(name, _Unset):
+            record.name = name
+        if not isinstance(number_of_weights, _Unset):
+            record.number_of_weights = number_of_weights
+        if not isinstance(notes, _Unset):
+            record.notes = notes
+
+        with handle_db_errors(session):
+            session.add(record)
+            session.commit()
+
+    return record
+
+
+@router.delete("/", status_code=status.HTTP_200_OK, response_model=ExerciseTypeInDB)
+def delete_exercise_type(
+    id: UUID,
+    session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
+    current_user: db.User = Depends(get_current_user),
+) -> db.ExerciseType:
+    """Soft-delete an exercise type."""
+    # Filter on ID and read permissions.
+    query = db.ExerciseType.query(current_user=current_user, id=id)
+    with session_factory(expire_on_commit=False) as session:
+        record = session.scalars(query).one_or_none()
+        if record is None:
+            raise HTTPException(
+                status_code=404, detail=f"exercise type with id '{id}' not found"
+            )
+        if not record.deleteable_by(current_user):
+            raise HTTPException(
+                status_code=401,
+                detail=f"you do not have permissions to update exercise type with id '{id}'",
+            )
+        record.deleted_at = datetime.now(tz=timezone.utc)
+        with handle_db_errors(session):
+            session.commit()
+
+    return record
