@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.v1.models.workout_type import WorkoutTypeIn, WorkoutTypeInDB
 from app.v1.auth import get_current_user
 from app import db
-from .error_handlers import handle_db_errors
+from app.v1.api.error_handlers import handle_db_errors
 from app.v1.api.unset import _Unset, _unset
 
 router = APIRouter(prefix="/workout_types")

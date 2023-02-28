@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .api import routers
+from .api.routers import routers
 
 ORIGINS = [
     "http://localhost",
