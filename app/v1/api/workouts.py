@@ -2,60 +2,62 @@ from uuid import UUID
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, status, HTTPException, Body
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import Session, sessionmaker
 
-from app.v1.models.exercise import ExerciseIn, ExerciseInDB
+from app.v1.models.workout import WorkoutIn, WorkoutInDB
 from app.v1.auth import get_current_user
 from app import db
 from .error_handlers import handle_db_errors
-from app.v1.endpoints.unset import _Unset, _unset
+from app.v1.api.unset import _Unset, _unset
 
-router = APIRouter(prefix="/exercises")
+router = APIRouter(prefix="/workouts")
 
 
-@router.get("/", response_model=list[ExerciseInDB])
-def read_exercises(
+@router.get("/", response_model=list[WorkoutInDB])
+def read_workouts(
     id: UUID | None = None,
-    exercise_type_id: UUID | None = None,
-    workout_id: UUID | None = None,
+    status: str | None = None,
+    workout_type_id: UUID | None = None,
     min_start_time: datetime | None = None,
     max_start_time: datetime | None = None,
+    min_end_time: datetime | None = None,
+    max_end_time: datetime | None = None,
     session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
     current_user: db.User = Depends(get_current_user),
-) -> list[db.Exercise]:
+) -> list[db.Workout]:
     """
-    Fetch exercises.
+    Fetch workouts.
     """
-    query = db.Exercise.query(
+    query = db.Workout.query(
         current_user=current_user,
         id=id,
-        exercise_type_id=exercise_type_id,
-        workout_id=workout_id,
+        status=status,
+        workout_type_id=workout_type_id,
         min_start_time=min_start_time,
         max_start_time=max_start_time,
+        min_end_time=min_end_time,
+        max_end_time=max_end_time,
     )
     with session_factory() as session:
         result = session.scalars(query)
         return list(result)
 
 
-@router.post(
-    "/", status_code=status.HTTP_201_CREATED, response_model=list[ExerciseInDB]
-)
-def create_exercises(
-    exercise: ExerciseIn | list[ExerciseIn],
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=list[WorkoutInDB])
+def create_workout(
+    workout: WorkoutIn | list[WorkoutIn],
     session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
     current_user: db.User = Depends(get_current_user),
-) -> list[db.Exercise]:
+) -> list[db.Workout]:
     """
-    Create a new exercise or exercises.
+    Record a new workout or workouts.
     """
-    if not isinstance(exercise, list):
-        exercises = [exercise]
+    if not isinstance(workout, list):
+        wkts = [workout]
     else:
-        exercises = exercise
+        wkts = workout
 
-    records = [ex.to_orm_model(user_id=current_user.id) for ex in exercises]
+    records = [wkt.to_orm_model(user_id=current_user.id) for wkt in wkts]
     with session_factory(expire_on_commit=False) as session:
         with handle_db_errors(session):
             session.add_all(records)
@@ -63,14 +65,15 @@ def create_exercises(
     return records
 
 
-@router.put("/", status_code=status.HTTP_200_OK, response_model=ExerciseInDB)
-def overwrite_exercise(
+@router.put("/", status_code=status.HTTP_200_OK, response_model=WorkoutInDB)
+def overwrite_workout(
     id: UUID,
-    exercise: ExerciseIn,
+    workout: WorkoutIn,
     session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
     current_user: db.User = Depends(get_current_user),
-) -> db.Exercise:
-    query = db.Exercise.query(current_user=current_user, id=id)
+) -> db.Workout:
+    # Filter on ID and read permissions.
+    query = db.Workout.query(current_user=current_user, id=id)
     with session_factory(expire_on_commit=False) as session:
         record = session.scalars(query).one_or_none()
         if record is None:
@@ -83,51 +86,48 @@ def overwrite_exercise(
                 detail=f"you do not have permissions to update workout with id '{id}'",
             )
         # Update the record in-place.
-        exercise.update_orm_model(record)
+        workout.update_orm_model(record)
         with handle_db_errors(session):
             session.add(record)
             session.commit()
     return record
 
 
-@router.patch("/", status_code=status.HTTP_200_OK, response_model=ExerciseInDB)
-def update_exercise(
+@router.patch("/", status_code=status.HTTP_200_OK, response_model=WorkoutInDB)
+def update_workout(
     id: UUID,
     start_time: datetime | None = Body(_unset),
-    weight: float = Body(_unset),
-    weight_unit: str | None = Body(_unset),
-    reps: int | None = Body(_unset),
-    seconds: int | None = Body(_unset),
+    end_time: datetime | None = Body(_unset),
+    status: str = Body(_unset),
     notes: str | None = Body(_unset),
+    workout_type_id: UUID | None = Body(_unset),
     session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
     current_user: db.User = Depends(get_current_user),
-) -> db.Exercise:
+) -> db.Workout:
     # Filter on ID and read permissions.
-    query = db.Exercise.query(current_user=current_user, id=id)
+    query = db.Workout.query(current_user=current_user, id=id)
     with session_factory(expire_on_commit=False) as session:
         record = session.scalars(query).one_or_none()
         if record is None:
             raise HTTPException(
-                status_code=404, detail=f"exercise with id '{id}' not found"
+                status_code=404, detail=f"workout with id '{id}' not found"
             )
         if not record.updateable_by(current_user):
             raise HTTPException(
                 status_code=401,
-                detail=f"you do not have permissions to update exercise with id '{id}'",
+                detail=f"you do not have permissions to update workout with id '{id}'",
             )
 
         if not isinstance(start_time, _Unset):
             record.start_time = start_time
-        if not isinstance(weight, _Unset):
-            record.weight = weight
-        if not isinstance(weight_unit, _Unset):
-            record.weight_unit = weight_unit
-        if not isinstance(reps, _Unset):
-            record.reps = reps
-        if not isinstance(seconds, _Unset):
-            record.seconds = seconds
+        if not isinstance(end_time, _Unset):
+            record.start_time = end_time
+        if not isinstance(status, _Unset):
+            record.status = status
         if not isinstance(notes, _Unset):
             record.notes = notes
+        if not isinstance(workout_type_id, _Unset):
+            record.workout_type_id = workout_type_id
 
         with handle_db_errors(session):
             session.add(record)
@@ -136,25 +136,25 @@ def update_exercise(
     return record
 
 
-@router.delete("/", status_code=status.HTTP_200_OK, response_model=ExerciseInDB)
-def delete_exercise(
+@router.delete("/", status_code=status.HTTP_200_OK, response_model=WorkoutInDB)
+def delete_workout(
     id: UUID,
     session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
     current_user: db.User = Depends(get_current_user),
-) -> db.Exercise:
-    """Soft-delete an exercise."""
+) -> db.Workout:
+    """Soft-delete a workout."""
     # Filter on ID and read permissions.
-    query = db.Exercise.query(current_user=current_user, id=id)
+    query = db.Workout.query(current_user=current_user, id=id)
     with session_factory(expire_on_commit=False) as session:
         record = session.scalars(query).one_or_none()
         if record is None:
             raise HTTPException(
-                status_code=404, detail=f"exercise with id '{id}' not found"
+                status_code=404, detail=f"workout with id '{id}' not found"
             )
         if not record.deleteable_by(current_user):
             raise HTTPException(
                 status_code=401,
-                detail=f"you do not have permissions to update exercise with id '{id}'",
+                detail=f"you do not have permissions to update workout with id '{id}'",
             )
         record.deleted_at = datetime.now(tz=timezone.utc)
         with handle_db_errors(session):

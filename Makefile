@@ -19,4 +19,4 @@ typecheck:
 test:
 	pytest
 
-check: typecheck test lint
+check: lint typecheck test
