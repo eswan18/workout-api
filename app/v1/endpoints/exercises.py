@@ -8,7 +8,7 @@ from app.v1.models.exercise import ExerciseIn, ExerciseInDB
 from app.v1.auth import get_current_user
 from app import db
 from .error_handlers import handle_db_errors
-from app.unset import _Unset, _unset
+from app.v1.endpoints.unset import _Unset, _unset
 
 router = APIRouter(prefix="/exercises")
 
