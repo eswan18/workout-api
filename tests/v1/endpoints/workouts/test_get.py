@@ -26,7 +26,7 @@ def test_unauthenticated_user_cant_read(
     assert response.status_code == 401
 
 
-def test_one_user_cant_read_anothers_workout_types(
+def test_one_user_cant_read_anothers_workouts(
     client: TestClient,
     secondary_test_user: UserWithAuth,
     primary_user_workouts: tuple[Workout, ...],

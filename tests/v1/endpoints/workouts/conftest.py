@@ -87,7 +87,6 @@ def primary_user_soft_deleted_workout(
 ) -> Iterator[Workout]:
     user_id = primary_test_user.user.id
     with session_factory(expire_on_commit=False) as session:
-        # Two workouts that are instances of "workout type 1"
         wt = WorkoutType(
             name="a workout type that isn't soft deleted",
             owner_user_id=user_id,
