@@ -19,10 +19,10 @@ def test_unauthenticated_user_cant_update(
 ):
     ex = primary_user_exercises[0]
     # No creds
-    response = client.put(ROUTE, params={"id": ex.id}, json=postable_payload)
+    response = client.patch(ROUTE, params={"id": ex.id}, json=postable_payload)
     assert response.status_code == 401
     # Wrong creds
-    response = client.put(
+    response = client.patch(
         ROUTE, json=postable_payload, headers={"Authorization": "Bearer 123456"}
     )
     assert response.status_code == 401
@@ -36,7 +36,7 @@ def test_authenticated_user_can_update(
     session_factory: sessionmaker[Session],
 ):
     ex = primary_user_exercises[0]
-    response = client.put(
+    response = client.patch(
         ROUTE,
         params={"id": ex.id},
         json=postable_payload,
@@ -59,7 +59,7 @@ def test_authenticated_user_can_update(
         assert record.updated_at > record.created_at
 
 
-def test_partial_payload_is_rejected(
+def test_partial_payload_is_accepted(
     client: TestClient,
     primary_test_user: UserWithAuth,
     postable_payload: dict[str, str],
@@ -71,12 +71,14 @@ def test_partial_payload_is_rejected(
     """
     ex = primary_user_exercises[0]
     payload = {"start_time": postable_payload["start_time"]}
-    response = client.put(
+    response = client.patch(
         ROUTE, params={"id": str(ex.id)}, json=payload, headers=primary_test_user.auth
     )
-    assert response.status_code == 422
+    assert response.status_code == 200
     with session_factory() as session:
         # Confirm that the record wasn't modified.
         query = select(Exercise).where(Exercise.id == ex.id)
         record = session.execute(query).scalars().one()
-        assert record.start_time == ex.start_time
+        assert record.start_time == datetime.fromisoformat(
+            postable_payload["start_time"]
+        )
