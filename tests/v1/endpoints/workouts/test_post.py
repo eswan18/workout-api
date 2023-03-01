@@ -47,7 +47,7 @@ def test_authenticated_user_can_create_workouts(
         assert result.rowcount == 1
 
 
-def invalid_workout_type_id_is_rejected(
+def test_invalid_workout_type_id_is_rejected(
     client: TestClient,
     primary_test_user: UserWithAuth,
     postable_payload: dict[str, str],
