@@ -17,6 +17,6 @@ typecheck:
 	mypy $(SRC_DIR)
 
 test:
-	pytest
+	coverage run --source $(SRC_DIR) -m pytest
 
 check: lint typecheck test
