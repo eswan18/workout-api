@@ -67,7 +67,7 @@ def test_partial_payload_is_accepted(
     primary_user_exercises: tuple[Exercise, ...],
 ):
     """
-    Omitting the mandatory field (status) of a workout results in a 401.
+    Omitting a mandatory field of a exercise is fine with Patch.
     """
     ex = primary_user_exercises[0]
     payload = {"start_time": postable_payload["start_time"]}

@@ -67,7 +67,9 @@ def test_partial_payload_is_rejected(
     primary_user_exercises: tuple[Exercise, ...],
 ):
     """
-    Omitting the mandatory field (status) of a workout results in a 401.
+    Omitting a mandatory field of a exercise results in a 401.
+
+    Mandatory fields are workout_id & exercise_id.
     """
     ex = primary_user_exercises[0]
     payload = {"start_time": postable_payload["start_time"]}
