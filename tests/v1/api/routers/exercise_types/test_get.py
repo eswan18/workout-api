@@ -35,7 +35,7 @@ def test_one_user_cant_read_anothers_exercise_types(
 ):
     response = client.get(ROUTE, headers=secondary_test_user.auth)
     assert response.status_code == 200
-    # Make sure we only get public workout types.
+    # Make sure we only get public exercise types.
     ex_types = response.json()
     for ex_tp in ex_types:
         assert ex_tp["owner_user_id"] == None
