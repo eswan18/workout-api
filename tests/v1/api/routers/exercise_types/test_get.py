@@ -1,6 +1,5 @@
 from uuid import UUID
 
-import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.sql import select, delete
 from sqlalchemy.sql.functions import count
@@ -96,27 +95,18 @@ def test_filtering(
     primary_test_user: UserWithAuth,
     primary_user_exercise_types: tuple[ExerciseType, ...],
 ):
-    pytest.fail()
-    # TODO -- the below code is just copied from the /workout_types test.
     # Get by ID.
-    params = {"id": primary_user_workout_types[0].id}
+    params = {"id": primary_user_exercise_types[0].id}
     response = client.get(ROUTE, params=params, headers=primary_test_user.auth)
     assert response.status_code == 200
     payload = response.json()
     assert len(payload) == 1
-    assert payload[0]["name"] == primary_user_workout_types[0].name
+    assert payload[0]["name"] == primary_user_exercise_types[0].name
 
     # Get by name.
-    params = {"name": primary_user_workout_types[1].name}
+    params = {"name": primary_user_exercise_types[1].name}
     response = client.get(ROUTE, params=params, headers=primary_test_user.auth)
     assert response.status_code == 200
     payload = response.json()
     assert len(payload) == 1
-    assert payload[0]["id"] == str(primary_user_workout_types[1].id)
-
-    # Get by parent ID.
-    params = {"owner_user_id": primary_user_workout_types[1].owner_user_id}
-    response = client.get(ROUTE, params=params, headers=primary_test_user.auth)
-    assert response.status_code == 200
-    payload = response.json()
-    assert len(payload) == len(primary_user_workout_types)
+    assert payload[0]["id"] == str(primary_user_exercise_types[1].id)
