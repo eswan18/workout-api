@@ -91,7 +91,7 @@ def secondary_test_user(session_factory) -> Iterator[UserWithAuth]:
 
 
 @pytest.fixture(scope="function")
-def public_exercse_type(
+def public_exercise_type(
     session_factory: sessionmaker[Session],
 ) -> Iterator[ExerciseType]:
     """Add a public exercise type to the db."""

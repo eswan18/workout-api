@@ -39,10 +39,10 @@ def test_authentication_required_for_delete(
 
 def test_cant_delete_public_exercise_type(
     client: TestClient,
-    public_exercse_type: ExerciseType,
+    public_exercise_type: ExerciseType,
     session_factory: sessionmaker[Session],
 ):
-    params = {"id": public_exercse_type.id}
+    params = {"id": public_exercise_type.id}
     response = client.delete(ROUTE, params=params)
     assert response.status_code == 401
     assert set(response.json().keys()) == {"detail"}
