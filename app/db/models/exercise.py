@@ -22,7 +22,7 @@ class Exercise(Base, ModificationTimesMixin):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     start_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    weight: Mapped[float] = mapped_column(Double)
+    weight: Mapped[float | None] = mapped_column(Double)
     weight_unit: Mapped[str | None] = mapped_column(Text)
     reps: Mapped[int | None] = mapped_column(Integer)
     seconds: Mapped[int | None] = mapped_column(Integer)
