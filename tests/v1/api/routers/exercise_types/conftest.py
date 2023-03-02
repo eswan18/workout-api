@@ -25,6 +25,7 @@ def primary_user_exercise_types(
     with session_factory(expire_on_commit=False) as session:
         ex1 = ExerciseType(
             name="Pull-ups",
+            notes="pull yourself up",
             owner_user_id=user_id,
         )
         # Another workout, child of workout type 1.
