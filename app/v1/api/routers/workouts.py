@@ -121,7 +121,7 @@ def update_workout(
         if not isinstance(start_time, _Unset):
             record.start_time = start_time
         if not isinstance(end_time, _Unset):
-            record.start_time = end_time
+            record.end_time = end_time
         if not isinstance(status, _Unset):
             record.status = status
         if not isinstance(notes, _Unset):
