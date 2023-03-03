@@ -8,11 +8,11 @@ from fastapi.testclient import TestClient
 
 from app.v1.models.workout import WorkoutIn, WorkoutInDB
 from app.v1.models.exercise import ExerciseIn, ExerciseInDB
-from app.v1.models.exercise_type import ExerciseTypeInDB
+from app.v1.models.exercise_type import ExerciseTypeIn, ExerciseTypeInDB
 
 
 @dataclass
-class ClientSession:
+class ApiClient:
     """
     A client that automatically passes auth.
     """
@@ -39,6 +39,16 @@ class ClientSession:
         (created,) = response.json()
         return WorkoutInDB.parse_obj(created)
 
+    def end_workout(self, workout_id: str, end_time: datetime) -> WorkoutInDB:
+        end_time_str = end_time.isoformat()
+        response = self.patch(
+            "/workouts",
+            params={"id": workout_id},
+            json={"end_time": end_time_str, "status": "completed"},
+        )
+        assert response.status_code == 200
+        return WorkoutInDB.parse_obj(response.json())
+
     def create_new_exercise(
         self, time: datetime, workout_id: str, ex_type_id: str
     ) -> ExerciseInDB:
@@ -56,9 +66,19 @@ class ClientSession:
         return ExerciseInDB.parse_obj(created)
 
     def create_new_ex_type(self) -> ExerciseTypeInDB:
-        ...
+        ex_tp = ExerciseTypeIn(name="Personal workout")
+        response = self.post("/exercise_types", data=ex_tp.json())
+        assert response.status_code == 201
+        (created,) = response.json()
+        return ExerciseTypeInDB.parse_obj(created)
 
     def get_exercises_for_workout(self, workout_id: str) -> list[ExerciseInDB]:
         response = self.get("/exercises", params={"workout_id": workout_id})
         assert response.status_code == 200
         return [ExerciseInDB.parse_obj(record) for record in response.json()]
+
+    def get_workout(self, workout_id: str) -> WorkoutInDB:
+        response = self.get("/workouts", params={"id": workout_id})
+        assert response.status_code == 200
+        (fetched,) = response.json()
+        return WorkoutInDB.parse_obj(fetched)
