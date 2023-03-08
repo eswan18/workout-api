@@ -66,7 +66,7 @@ def primary_user_exercises(
         Exercise(
             start_time=datetime(2023, 1, 1, 10, 34, 3, tzinfo=timezone.utc),
             weight=10,
-            weight_unit="Pounds",
+            weight_unit="pounds",
             reps=25,
             notes="My first set of the day",
             exercise_type_id=exercise_type.id,
@@ -76,7 +76,7 @@ def primary_user_exercises(
         Exercise(
             start_time=datetime(2023, 1, 1, 10, 35, 55, tzinfo=timezone.utc),
             weight=5,
-            weight_unit="Pounds",
+            weight_unit="pounds",
             reps=22,
             seconds=10,
             exercise_type_id=exercise_type.id,

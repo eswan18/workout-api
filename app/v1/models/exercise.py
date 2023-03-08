@@ -1,15 +1,21 @@
 from uuid import UUID
 from datetime import datetime
+from typing import TypeAlias, Literal
 
 from pydantic import BaseModel
 
 from app.db.models import Exercise
 
 
+# Unfortunately these values are duplicated since we can't pass type hints at runtime.
+valid_unit_values = ["pounds", "kilograms"]
+UnitValue: TypeAlias = Literal["pounds", "kilograms"]
+
+
 class ExerciseIn(BaseModel):
     start_time: datetime | None
     weight: float
-    weight_unit: str | None
+    weight_unit: UnitValue | None
     reps: int | None
     seconds: int | None
     notes: str | None

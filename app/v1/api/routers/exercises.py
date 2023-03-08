@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, status, HTTPException, Body
 from sqlalchemy.orm import sessionmaker, Session
 
-from app.v1.models.exercise import ExerciseIn, ExerciseInDB
+from app.v1.models.exercise import ExerciseIn, ExerciseInDB, UnitValue
 from app.v1.auth import get_current_user
 from app import db
 from app.v1.api.error_handlers import handle_db_errors
@@ -95,7 +95,7 @@ def update_exercise(
     id: UUID,
     start_time: datetime | None = Body(_unset),
     weight: float = Body(_unset),
-    weight_unit: str | None = Body(_unset),
+    weight_unit: UnitValue | None = Body(_unset),
     reps: int | None = Body(_unset),
     seconds: int | None = Body(_unset),
     notes: str | None = Body(_unset),
