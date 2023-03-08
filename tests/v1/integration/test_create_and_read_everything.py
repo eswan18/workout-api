@@ -159,7 +159,7 @@ def test_flow(client: TestClient, session_factory: sessionmaker[Session]):
             second=0,
             tzinfo=timezone.utc,
         ).isoformat(),
-        "status": "started",
+        "status": "in-progress",
         "workout_type_id": wkt_tp_id,
     }
     response = client.post("/workouts/", headers=auth_header, json=new_workout)

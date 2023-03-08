@@ -1,11 +1,10 @@
 from uuid import UUID
 from datetime import datetime, timezone
-from typing import Literal
 
 from fastapi import APIRouter, Depends, status, HTTPException, Body
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.v1.models.workout import WorkoutIn, WorkoutInDB
+from app.v1.models.workout import WorkoutIn, WorkoutInDB, StatusValue
 from app.v1.auth import get_current_user
 from app import db
 from app.v1.api.error_handlers import handle_db_errors
@@ -99,7 +98,7 @@ def update_workout(
     id: UUID,
     start_time: datetime | None = Body(_unset),
     end_time: datetime | None = Body(_unset),
-    status: Literal["started", "completed"] = Body(_unset),
+    status: StatusValue = Body(_unset),
     notes: str | None = Body(_unset),
     workout_type_id: UUID | None = Body(_unset),
     session_factory: sessionmaker[Session] = Depends(db.get_session_factory),

@@ -14,7 +14,7 @@ def postable_payload():
     return {
         "start_time": "2022-01-01T09:30:00",
         "end_time": None,
-        "status": "started",
+        "status": "paused",
         "workout_type_id": None,
     }
 
@@ -45,7 +45,7 @@ def primary_user_workouts(
             # This one is in-progress
             start_time=datetime(2023, 1, 2, 9, 0, 0, tzinfo=timezone.utc),
             end_time=None,
-            status="started",
+            status="in-progress",
             user_id=user_id,
             workout_type_id=wt1.id,
         )

@@ -68,13 +68,13 @@ def test_filtering(
     assert len(payload) == 1
 
     # Get by status.
-    params = {"status": "started"}
+    params = {"status": "in-progress"}
     response = client.get(ROUTE, params=params, headers=primary_test_user.auth)
     assert response.status_code == 200
     payload = response.json()
     assert len(payload) >= 1
     for workout in payload:
-        assert workout["status"] == "started"
+        assert workout["status"] == "in-progress"
 
     # Get by workout type.
     params = {"workout_type_id": primary_user_workouts[0].workout_type_id}

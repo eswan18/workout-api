@@ -7,8 +7,9 @@ from pydantic import BaseModel
 from app.db.models import Workout
 
 
-valid_status_values = ["started", "completed"]
-StatusValue: TypeAlias = Literal["started", "completed"]
+# Unfortunately these values are duplicated since we can't pass type hints at runtime.
+valid_status_values = ["in-progress", "paused", "completed"]
+StatusValue: TypeAlias = Literal["in-progress", "paused", "completed"]
 
 
 class WorkoutIn(BaseModel):

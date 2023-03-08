@@ -31,7 +31,7 @@ class ApiClient:
         wkt = WorkoutIn(
             start_time=time,
             end_time=None,
-            status="started",
+            status="in-progress",
             workout_type_id=None,  # We are an independent thinker
         )
         response = self.post("/workouts", data=wkt.json())
