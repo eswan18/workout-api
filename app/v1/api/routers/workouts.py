@@ -1,5 +1,6 @@
 from uuid import UUID
 from datetime import datetime, timezone
+from typing import Literal
 
 from fastapi import APIRouter, Depends, status, HTTPException, Body
 from sqlalchemy.orm import Session, sessionmaker
@@ -98,7 +99,7 @@ def update_workout(
     id: UUID,
     start_time: datetime | None = Body(_unset),
     end_time: datetime | None = Body(_unset),
-    status: str = Body(_unset),
+    status: Literal["started", "completed"] = Body(_unset),
     notes: str | None = Body(_unset),
     workout_type_id: UUID | None = Body(_unset),
     session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
