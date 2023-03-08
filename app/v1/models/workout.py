@@ -1,15 +1,20 @@
 from uuid import UUID
 from datetime import datetime
+from typing import Literal, TypeAlias
 
 from pydantic import BaseModel
 
 from app.db.models import Workout
 
 
+valid_status_values = ["started", "completed"]
+StatusValue: TypeAlias = Literal["started", "completed"]
+
+
 class WorkoutIn(BaseModel):
     start_time: datetime | None
     end_time: datetime | None
-    status: str
+    status: StatusValue
     notes: str | None
     workout_type_id: UUID | None
 
