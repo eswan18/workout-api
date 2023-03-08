@@ -1,17 +1,38 @@
 #!/bin/bash
 set -e
 
+container_name="workout-api-postgres"
+
+# Check if the container is already running
+matching_containers=$(docker ps -f "name=${container_name}" --quiet | wc -l)
+if [ "$matching_containers" -eq "1" ]; then
+  echo "Error: container with name $container_name is already running"
+  printf "Shut down container? [y/N] "
+  read response
+  case "$response" in
+    y* | Y* )
+        ./scripts/stop-local-db.sh > /dev/null
+        ;;
+    * )
+        echo "Exiting"
+        exit 1
+        ;;
+  esac
+fi
+
 # Start fresh container.
 echo
 echo "start-local-db: Starting postgres container"
 echo "-------------------------------------------"
-container_id=$(docker run \
-    --name workout-api-postgres \
+container_id=$(
+    docker run \
+    --name ${container_name} \
     -e POSTGRES_USER=test \
     -e POSTGRES_PASSWORD=test \
     -d --rm \
     -p 6543:5432 \
-    postgres:14.6)
+    postgres:14.6
+)
 sleep 1
 echo "Container ID: $container_id"
 
