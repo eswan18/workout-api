@@ -11,7 +11,7 @@ if [ "$matching_containers" -eq "1" ]; then
   read response
   case "$response" in
     y* | Y* )
-        ./scripts/stop-local-db.sh > /dev/null
+        docker stop "$container_name" > /dev/null
         ;;
     * )
         echo "Exiting"
