@@ -7,10 +7,7 @@ new="postgresql://"
 db_url="${DATABASE_URL/"$old"/"$new"}"
 
 here=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
-seed_files="$here/seeds/*"
+seed_files="$here/seeds/*.py"
 for file in $seed_files; do
-    echo ---------------------------
-    echo Running seed file $file...
-    psql $db_url -f $file -v "ON_ERROR_STOP=1"
-    echo ...done
+    python $file
 done

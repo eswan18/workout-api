@@ -16,8 +16,8 @@ class Base(DeclarativeBase):
 
 
 @cache
-def get_engine() -> Engine:
-    return create_engine(db_url, echo=True)
+def get_engine(echo: bool = True) -> Engine:
+    return create_engine(db_url, echo=echo)
 
 
 async def get_session() -> AsyncIterator[Session]:
@@ -34,13 +34,13 @@ async def get_session() -> AsyncIterator[Session]:
         db.close()
 
 
-async def get_session_factory() -> AsyncIterator[sessionmaker[Session]]:
-    engine = get_engine()
+async def get_session_factory(echo: bool = True) -> AsyncIterator[sessionmaker[Session]]:
+    engine = get_engine(echo=echo)
     session_factory = sessionmaker(bind=engine)
     yield session_factory
 
 
-def get_session_factory_sync() -> sessionmaker[Session]:
-    engine = get_engine()
+def get_session_factory_sync(echo: bool = True) -> sessionmaker[Session]:
+    engine = get_engine(echo=echo)
     session_factory = sessionmaker(bind=engine)
     return session_factory
