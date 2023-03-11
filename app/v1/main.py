@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .api.routers import routers
 
+
 ORIGINS = [
     "http://localhost",
     "http://localhost:8080",

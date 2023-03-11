@@ -49,7 +49,7 @@ async def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, APP_SECRET, algorithms=[ALGORITHM])
+        payload = decode_jwt(token)
         if "sub" not in payload:
             raise credentials_exception
         if "exp" not in payload:
@@ -60,7 +60,7 @@ async def get_current_user(
     except JWTError:
         raise credentials_exception
 
-    expire_time = datetime.fromtimestamp(payload["exp"])
+    expire_time = datetime.fromtimestamp(float(payload["exp"]))
     if datetime.utcnow() >= expire_time:
         raise credentials_exception
 
@@ -113,3 +113,11 @@ def create_access_token(
     to_encode = data | {"exp": expire_time_numeric}
     encoded_jwt = jwt.encode(to_encode, APP_SECRET, algorithm=ALGORITHM)
     return encoded_jwt
+
+
+def decode_jwt(token: str) -> dict[str, str]:
+    """
+    Decode a jwt for a user, with specified time-to-live.
+    """
+    payload = jwt.decode(token, APP_SECRET, algorithms=[ALGORITHM])
+    return payload
