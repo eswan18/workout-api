@@ -8,6 +8,7 @@ from app.v1.models.user import UserIn, UserOut
 from app.v1.auth import get_current_user
 from app import db
 from app.v1.auth import hash_pw
+from app.v1.lifecycle import publish_lifeycle_event, Action
 
 USER_CREATION_SECRET = os.environ["USER_CREATION_SECRET"]
 
@@ -43,6 +44,15 @@ def create_user(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="an account with that email address is already in use",
             )
+
+    # We have to publish events manually here because this endpoint doesn't require
+    # authentication.
+    publish_lifeycle_event(
+        resource=db.User,
+        action=Action.CREATE,
+        resource_id=record.id,
+        user=email,
+    )
     return record
 
 

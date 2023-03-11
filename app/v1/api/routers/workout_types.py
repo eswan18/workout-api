@@ -9,8 +9,13 @@ from app.v1.auth import get_current_user
 from app import db
 from app.v1.api.error_handlers import handle_db_errors
 from app.v1.api.unset import _Unset, _unset
+from app.v1.lifecycle import LifecyclePublisher
 
-router = APIRouter(prefix="/workout_types")
+
+router = APIRouter(
+    prefix="/workout_types",
+    dependencies=[Depends(LifecyclePublisher(db.WorkoutType))],
+)
 
 
 @router.get("/", response_model=list[WorkoutTypeInDB])

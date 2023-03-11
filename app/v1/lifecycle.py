@@ -53,6 +53,7 @@ class LifecyclePublisher:
         # have access to the response here.
         # If I can find a way to get at the response, it would be best to only send this
         # on 2xx responses.
+        # Keep an eye on this issue: https://github.com/tiangolo/fastapi/issues/3500
         publish_lifeycle_event(
             resource=self.resource,
             action=action,
@@ -91,6 +92,6 @@ def publish_lifeycle_event(
     if user is not None:
         data["user"] = user
     if resource_id is not None:
-        data["id"] = resource_id
+        data["id"] = str(resource_id)
     payload = json.dumps(data)
     publish(exchange="lifecycle", message=payload, routing_key=routing_key)
