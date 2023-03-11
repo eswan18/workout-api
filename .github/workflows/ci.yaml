@@ -62,7 +62,7 @@ jobs:
         env:
           DATABASE_URL: "postgresql://postgres:postgres@localhost/workout_api"
       - name: Run DB Seeds
-        run: bash scripts/run_seeds.sh
+        run: poetry run bash scripts/run_seeds.sh
         env:
           DATABASE_URL: "postgresql://postgres:postgres@localhost/workout_api"
       - name: Run Test
