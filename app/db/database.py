@@ -34,7 +34,9 @@ async def get_session() -> AsyncIterator[Session]:
         db.close()
 
 
-async def get_session_factory(echo: bool = True) -> AsyncIterator[sessionmaker[Session]]:
+async def get_session_factory(
+    echo: bool = True,
+) -> AsyncIterator[sessionmaker[Session]]:
     engine = get_engine(echo=echo)
     session_factory = sessionmaker(bind=engine)
     yield session_factory
