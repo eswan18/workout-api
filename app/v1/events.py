@@ -20,8 +20,8 @@ def publishes_event(resource: OrmModelType, action: Action) -> Callable[[F], F]:
     """
     Decorator to publish a resource creation, read, update, or deletion event.
 
-    Meant to be applied to FastAPI routes. If the route is called with a `current_user`
-    argument, the user will be recorded.
+    Meant to be applied to FastAPI routes, although I think it would be simpler to
+    publish events by hooking into the app middleware.
 
     Parameters
     ----------
@@ -61,7 +61,6 @@ def publish_event(
     """
     # Todo
     ...
-    print(f"Publishing {action.name} event for {resource.__name__} resource.")
 
 
 def publish(message: str, exchange: str = "events", routing_key: str = "events"):

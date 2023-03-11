@@ -10,6 +10,7 @@ from app import db
 from app.v1.api.error_handlers import handle_db_errors
 from app.v1.api.unset import _Unset, _unset
 
+
 router = APIRouter(prefix="/exercise_types")
 
 
