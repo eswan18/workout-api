@@ -15,8 +15,9 @@ from app.db.models import User
 OrmModelType = type[Base]
 
 
-
 class Action(Enum):
+    """A CRUD lifecycle action."""
+
     CREATE = 1
     READ = 2
     UPDATE = 3
@@ -33,6 +34,12 @@ method_to_crud_map = {
 
 
 class LifecyclePublisher:
+    """
+    A FastAPI dependency that publishes lifecycle events for a resource.
+
+    Meant to be attached as a dependency to the FastAPI router for the resource.
+    """
+
     def __init__(self, resource: OrmModelType):
         self.resource = resource
         self.resource_name = resource.__name__
@@ -42,6 +49,7 @@ class LifecyclePublisher:
         request: Request,
         current_user: User = Depends(get_current_user),
     ):
+        """Publish the appropriate lifecycle event for the resource."""
         if request.method not in method_to_crud_map:
             # We don't publish events for methods that don't map to CRUD actions.
             yield
