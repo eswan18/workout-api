@@ -1,7 +1,7 @@
 from uuid import UUID
 from enum import Enum
 import json
-from typing import Any, TypeVar, Callable
+from typing import Any
 
 
 from fastapi import Depends, Request
@@ -13,7 +13,6 @@ from app.db.models import User
 
 
 OrmModelType = type[Base]
-F = TypeVar("F", bound=Callable[..., Any])
 
 
 class Action(Enum):
