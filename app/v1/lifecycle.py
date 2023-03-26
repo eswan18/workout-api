@@ -15,6 +15,7 @@ from app.db.models import User
 OrmModelType = type[Base]
 
 
+
 class Action(Enum):
     CREATE = 1
     READ = 2
