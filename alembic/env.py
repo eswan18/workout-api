@@ -27,6 +27,7 @@ target_metadata = Base.metadata
 db_url = os.environ["DATABASE_URL"]
 # In Heroku, the driver is called simply "postgres", which sqlalchemy doesn't like.
 db_url = db_url.replace("postgres://", "postgresql://")
+db_url = db_url.replace("postgresql://", "postgresql+psycopg://")
 config.set_main_option("sqlalchemy.url", db_url)
 
 
