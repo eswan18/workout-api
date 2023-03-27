@@ -1,12 +1,13 @@
 from uuid import UUID
 from datetime import datetime
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.sql import select
 from sqlalchemy.orm import sessionmaker, Session
 
 from app.db.models.user import UserWithAuth
-from app.db import Exercise
+from app.db import Exercise, Workout, ExerciseType
 
 
 ROUTE = "/exercises"
@@ -82,3 +83,43 @@ def test_partial_payload_is_rejected(
         query = select(Exercise).where(Exercise.id == ex.id)
         record = session.execute(query).scalars().one()
         assert record.start_time == ex.start_time
+
+
+@pytest.mark.xfail(reason="This check isn't implemented yet")
+def test_user_cant_set_workout_to_one_that_isnt_theirs(
+    client: TestClient,
+    primary_test_user: UserWithAuth,
+    primary_user_exercises: tuple[Exercise, ...],
+    secondary_user_workout_and_exercise_type: tuple[Workout, ExerciseType],
+    postable_payload: dict[str, str],
+):
+    """
+    Users can't update an exercise to set its workout ID to a workout that isn't theirs.
+    """
+    # Get an exercise owned by the primary user.
+    ex = primary_user_exercises[0]
+    # Try to update the exercise's workout to one that is owned by the secondary user.
+    payload = postable_payload.copy()
+    payload["workout_id"] = str(secondary_user_workout_and_exercise_type[0].id)
+    response = client.put(ROUTE, params={"id": str(ex.id)}, json=payload, headers=primary_test_user.auth)
+    assert response.status_code == 400
+
+
+@pytest.mark.xfail(reason="This check isn't implemented yet")
+def test_user_cant_set_workout_to_one_that_isnt_theirs(
+    client: TestClient,
+    primary_test_user: UserWithAuth,
+    primary_user_exercises: tuple[Exercise, ...],
+    secondary_user_workout_and_exercise_type: tuple[Workout, ExerciseType],
+    postable_payload: dict[str, str],
+):
+    """
+    Users can't update an exercise to set its exercise type to one that isn't theirs.
+    """
+    # Get an exercise owned by the primary user.
+    ex = primary_user_exercises[0]
+    # Try to update the exercise's workout to one that is owned by the secondary user.
+    payload = postable_payload.copy()
+    payload["exercise_type_id"] = str(secondary_user_workout_and_exercise_type[1].id)
+    response = client.put(ROUTE, params={"id": str(ex.id)}, json=payload, headers=primary_test_user.auth)
+    assert response.status_code == 400

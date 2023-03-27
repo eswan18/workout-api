@@ -1,11 +1,11 @@
-from typing import Self
+from typing import Self, Iterable
 import uuid
 from datetime import datetime
 
-from sqlalchemy.schema import ForeignKey
+from sqlalchemy.schema import CheckConstraint, ForeignKey
 from sqlalchemy.types import Integer, Double, Text, DateTime, UUID
 from sqlalchemy.sql.elements import ColumnElement
-from sqlalchemy.sql import Select, select, and_
+from sqlalchemy.sql import Select, select, and_, text
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.db.database import Base
@@ -17,6 +17,14 @@ from .exercise_type import ExerciseType
 
 class Exercise(Base, ModificationTimesMixin):
     __tablename__ = "exercises"
+    __table_args__ = (
+        # Users can only create exercises in their own workouts.
+        CheckConstraint("user_id = workout.user_id"),
+        # Users can only create exercises of types they own or of public types.
+        CheckConstraint(
+            "user_id = exercise_type.user_id OR exercise_type.user_id IS NULL"
+        ),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
@@ -133,3 +141,48 @@ class Exercise(Base, ModificationTimesMixin):
         if not include_soft_deleted:
             query = query.where(cls.not_soft_deleted())
         return query
+
+    @classmethod
+    def parents_exist_and_are_readable(
+        cls, exercises: Iterable[Self], user: User
+    ) -> Select[tuple[bool]]:
+        """
+        Check if the workout and exercise type of this exercise exist and are visible.
+
+        Useful for determining whether a user should be able to create/update an
+        exercise with these parents.
+        """
+        query = text(
+            """
+            SELECT
+                ids.id AS id,
+                'workout' AS parent_type,
+                CASE WHEN user_workouts.id IS NULL THEN false ELSE true END AS exists
+            FROM (VALUES
+                ('123e4567-e89b-12d3-a456-426655440000'::uuid),
+                ('a8d26bbc-c6af-4d85-b019-82096b1a21af'::uuid)
+            ) as ids(id)
+            LEFT JOIN (
+                SELECT * FROM workouts
+                WHERE user_id = :user_id
+            ) AS user_workouts
+            ON user_workouts.id = ids.id
+
+            UNION ALL
+
+            SELECT
+                ids.id AS id,
+                'exercise_type' AS parent_type,
+                CASE WHEN user_exercise_types.id IS NULL THEN false ELSE true END AS exists
+            FROM (VALUES
+                ('123e4567-e89b-12d3-a456-426655440000'::uuid),
+                ('a8d26bbc-c6af-4d85-b019-82096b1a21af'::uuid)
+            ) as ids(id)
+            LEFT JOIN (
+                SELECT * FROM exercise_types
+                WHERE user_id = :user_id or user_id IS NULL
+            ) AS user_exercise_types
+            ON user_exercise_types.id = ids.id
+        """
+        )
+        return self.workout.readable_by(user) and self.exercise_type.readable_by(user)

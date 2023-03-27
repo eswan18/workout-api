@@ -80,12 +80,12 @@ def overwrite_exercise(
         record = session.scalars(query).one_or_none()
         if record is None:
             raise HTTPException(
-                status_code=404, detail=f"workout with id '{id}' not found"
+                status_code=404, detail=f"exercise with id '{id}' not found"
             )
         if not record.updateable_by(current_user):
             raise HTTPException(
                 status_code=401,
-                detail=f"you do not have permissions to update workout with id '{id}'",
+                detail=f"you do not have permissions to update exercise with id '{id}'",
             )
         # Update the record in-place.
         exercise.update_orm_model(record)

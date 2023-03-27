@@ -66,17 +66,14 @@ def test_invalid_exercise_type_id_is_rejected(
         assert record is None
 
 
+@pytest.mark.xfail(reason="This check isn't implemented yet.")
 def test_user_cant_create_exercise_for_workout_that_isnt_theirs(
     client: TestClient,
     secondary_test_user: UserWithAuth,
     postable_payload: dict[str, str],
-    session_factory: sessionmaker[Session],
 ):
-    # The postable_payload references a workout_id and exercise_type_id that are both
-    # specific to the primary user.
-    # For now, force an xfail in the test so that we don't actually create the resource
-    # and have to delete it.
-    pytest.xfail("This check isn't implemented in the endpoint yet.")
+    # The postable_payload references a workout_id and exercise_type_id for the primary
+    # user.
     response = client.post(
         ROUTE, json=postable_payload, headers=secondary_test_user.auth
     )

@@ -54,6 +54,36 @@ def primary_user_workout_and_exercise_type(
 
 
 @pytest.fixture(scope="function")
+def secondary_user_workout_and_exercise_type(
+    session_factory: sessionmaker[Session],
+    secondary_test_user: UserWithAuth,
+) -> Iterator[tuple[Workout, ExerciseType]]:
+    user_id = secondary_test_user.user.id
+    with session_factory(expire_on_commit=False) as session:
+        # Add a workout to record exercises in.
+        wkt = Workout(
+            start_time=datetime(2023, 1, 1, 8, 0, 0, tzinfo=timezone.utc),
+            status="started",
+            user_id=user_id,
+        )
+        # And an exercise type that exercises can be instances of.
+        ex_tp = ExerciseType(
+            name="Crunches",
+            number_of_weights=0,
+            owner_user_id=user_id,
+        )
+        session.add_all([wkt, ex_tp])
+        session.commit()
+
+    yield (wkt, ex_tp)
+
+    with session_factory() as session:
+        session.execute(delete(Workout).where(Workout.id == wkt.id))
+        session.execute(delete(ExerciseType).where(ExerciseType.id == ex_tp.id))
+        session.commit()
+
+
+@pytest.fixture(scope="function")
 def primary_user_exercises(
     session_factory: sessionmaker[Session],
     primary_test_user: UserWithAuth,
