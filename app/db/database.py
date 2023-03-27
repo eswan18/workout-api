@@ -9,6 +9,7 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker, Session
 
 DB_URL = os.environ["DATABASE_URL"]
 db_url = DB_URL.replace("postgres://", "postgresql://")
+db_url = DB_URL.replace("postgresql://", "postgresql+psycopg://")
 
 
 class Base(DeclarativeBase):

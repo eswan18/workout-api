@@ -3,7 +3,7 @@ from typing import Literal
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from psycopg2.errors import ForeignKeyViolation, NotNullViolation
+from psycopg.errors import ForeignKeyViolation, NotNullViolation
 from fastapi import HTTPException
 
 
