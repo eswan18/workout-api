@@ -1,6 +1,5 @@
 from uuid import UUID, uuid4
 
-import pytest
 from sqlalchemy.sql import select, delete
 from sqlalchemy.orm import sessionmaker, Session
 from fastapi.testclient import TestClient
@@ -58,7 +57,7 @@ def test_invalid_exercise_type_id_is_rejected(
     random_id = uuid4()
     payload["exercise_type_id"] = str(random_id)
     response = client.post(ROUTE, json=payload, headers=primary_test_user.auth)
-    assert response.status_code == 400
+    assert response.status_code == 404
     with session_factory() as session:
         # Confirm that no record was added to the database.
         query = select(Exercise).where(Exercise.exercise_type_id == random_id)
@@ -66,7 +65,6 @@ def test_invalid_exercise_type_id_is_rejected(
         assert record is None
 
 
-@pytest.mark.xfail(reason="This check isn't implemented yet.")
 def test_user_cant_create_exercise_for_workout_that_isnt_theirs(
     client: TestClient,
     secondary_test_user: UserWithAuth,
@@ -77,4 +75,4 @@ def test_user_cant_create_exercise_for_workout_that_isnt_theirs(
     response = client.post(
         ROUTE, json=postable_payload, headers=secondary_test_user.auth
     )
-    assert response.status_code == 400
+    assert response.status_code == 404

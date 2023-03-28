@@ -1,6 +1,7 @@
 from uuid import UUID
 from datetime import datetime
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.sql import select
 from sqlalchemy.orm import sessionmaker, Session
@@ -82,3 +83,11 @@ def test_partial_payload_is_accepted(
         assert record.start_time == datetime.fromisoformat(
             postable_payload["start_time"]
         )
+
+
+def test_user_cant_set_exercise_type_to_one_that_isnt_theirs():
+    pytest.skip("Not implemented yet.")
+
+
+def test_user_cant_set_workout_to_one_that_isnt_theirs():
+    pytest.skip("Not implemented yet.")

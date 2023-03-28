@@ -62,6 +62,20 @@ def create_exercises(
 
     records = [ex.to_orm_model(user_id=current_user.id) for ex in exercises]
     with session_factory(expire_on_commit=False) as session:
+        # First check that the referenced workouts and exercise types exist and are
+        # visible to the user.
+        query = db.Exercise.missing_references_query(records, user=current_user)
+        result = session.execute(query)
+        missing_references = list(result)
+        if len(missing_references) > 0:
+            resources_as_str = ", ".join(
+                f"{ref.ref_type}:{ref.ref_id}" for ref in missing_references
+            )
+            raise HTTPException(
+                status_code=404,
+                detail=f"resource(s) not found: ({resources_as_str})",
+            )
+        # Then add the new records.
         with handle_db_errors(session):
             session.add_all(records)
             session.commit()
@@ -89,6 +103,14 @@ def overwrite_exercise(
             )
         # Update the record in-place.
         exercise.update_orm_model(record)
+        # Check that the new reference values are valid.
+        query = db.Exercise.missing_references_query([record], user=current_user)
+        result = session.execute(query).one_or_none()
+        if result is not None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"resource not found: ({result.ref_type}:{result.ref_id})",
+            )
         with handle_db_errors(session):
             session.add(record)
             session.commit()
