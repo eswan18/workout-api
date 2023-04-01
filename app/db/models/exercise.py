@@ -1,4 +1,4 @@
-from typing import Self, Iterable
+from typing import Self, Iterable, cast
 import uuid
 from datetime import datetime
 
@@ -145,7 +145,7 @@ class Exercise(Base, ModificationTimesMixin):
     @classmethod
     def missing_references_query(
         cls, records: Iterable[Self], user: User
-    ) -> Select[tuple[str, UUID]]:
+    ) -> Select[tuple[uuid.UUID, str]]:
         """
         Return a Select of referenced workouts/exercise types that aren't in the db.
 
@@ -154,8 +154,10 @@ class Exercise(Base, ModificationTimesMixin):
         workout_ids = values(column("id", UUID), name="workout_ids").data(
             [(r.workout_id,) for r in records]
         )
-        workout_query = (
-            select(column("id").label("ref_id"), literal("workout").label("ref_type"))
+        workout_query: Select[tuple[uuid.UUID, str]] = (
+            select(  # type: ignore
+                column("id").label("ref_id"), literal("workout").label("ref_type")
+            )
             .select_from(workout_ids)
             .where(
                 column("id").not_in(
@@ -167,14 +169,12 @@ class Exercise(Base, ModificationTimesMixin):
         ex_tp_ids = values(column("id", UUID), name="exercise_type_ids").data(
             [(r.exercise_type_id,) for r in records]
         )
-        ex_tp_query = (
-            select(
+        ex_tp_query: Select[tuple[uuid.UUID, str]] = (
+            select(  # type: ignore
                 column("id").label("ref_id"),
                 literal("exercise_type").label("ref_type"),
             )
-            .select_from(
-                ex_tp_ids,
-            )
+            .select_from(ex_tp_ids)
             .where(
                 column("id").not_in(
                     select(ExerciseType.id).where(
@@ -190,4 +190,4 @@ class Exercise(Base, ModificationTimesMixin):
         )
 
         query = workout_query.union_all(ex_tp_query)
-        return query
+        return cast(Select[tuple[uuid.UUID, str]], query)

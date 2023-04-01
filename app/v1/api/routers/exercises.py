@@ -104,8 +104,8 @@ def overwrite_exercise(
         # Update the record in-place.
         exercise.update_orm_model(record)
         # Check that the new reference values are valid.
-        query = db.Exercise.missing_references_query([record], user=current_user)
-        result = session.execute(query).one_or_none()
+        ref_query = db.Exercise.missing_references_query([record], user=current_user)
+        result = session.execute(ref_query).one_or_none()
         if result is not None:
             raise HTTPException(
                 status_code=404,
