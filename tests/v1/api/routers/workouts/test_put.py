@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.sql import select
 
 from app.db.models.user import UserWithAuth
-from app.db import Workout
+from app.db import Workout, WorkoutType
 
 
 ROUTE = "/workouts"
@@ -80,3 +80,22 @@ def test_partial_payload_is_rejected(
         query = select(Workout).where(Workout.id == wkt1.id)
         record = session.execute(query).scalars().one()
         assert record.start_time == wkt1_start_time
+
+
+def test_user_cant_set_workout_type_to_one_that_isnt_theirs(
+    client: TestClient,
+    primary_test_user: UserWithAuth,
+    primary_user_workouts: tuple[Workout, ...],
+    secondary_user_workout_type: WorkoutType,
+    postable_payload: dict[str, str],
+):
+    """Users can't update a workout to set its type to one that isn't theirs."""
+    # Get a workout owned by the primary user.
+    wkt = primary_user_workouts[0]
+    # Try to update the workout's type to one owned by the secondary user.
+    payload = postable_payload.copy()
+    payload["workout_type_id"] = str(secondary_user_workout_type.id)
+    response = client.put(
+        ROUTE, params={"id": str(wkt.id)}, json=payload, headers=primary_test_user.auth
+    )
+    assert response.status_code == 404
