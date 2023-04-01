@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy.schema import CheckConstraint, ForeignKey
 from sqlalchemy.types import Integer, Double, Text, DateTime, UUID
 from sqlalchemy.sql.elements import ColumnElement
-from sqlalchemy.sql import Select, select, and_, values, column, literal
+from sqlalchemy.sql import Select, select, and_, values, column, literal, or_
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.db.database import Base
@@ -178,7 +178,12 @@ class Exercise(Base, ModificationTimesMixin):
             .where(
                 column("id").not_in(
                     select(ExerciseType.id).where(
-                        ExerciseType.owner_user_id.in_((user.id, None))
+                        # Note: doing .owner_user_id.in_((user.id, None)) here doesn't
+                        # work; we need the OR for some reason.
+                        or_(
+                            ExerciseType.owner_user_id == user.id,
+                            ExerciseType.owner_user_id.is_(None),
+                        ),
                     )
                 )
             )
