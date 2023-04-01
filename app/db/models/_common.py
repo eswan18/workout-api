@@ -14,10 +14,16 @@ def missing_references_to_model_query(
     model: type[Base],
 ) -> Select[tuple[uuid.UUID, str]]:
     """Build a query for IDs that aren't visible to this user, by resource."""
-    # IDs of the records we're checking.
-    id_values = values(column("id", UUID), name="record_ids").data(
-        [(id,) for id in ids]
-    )
+    ids_as_records = [(id,) for id in ids]
+
+    if len(ids_as_records) == 0:
+        # This query always returns 0 rows, but it has the right schema.
+        return select(
+            model.id.label("ref_id"),
+            literal(model.__name__).label("ref_type"),
+        ).where(False)
+
+    id_values = values(column("id", UUID), name="record_ids").data(ids_as_records)
     # Find which IDs don't match up to a resource that's visible to this user.
     query: Select[tuple[uuid.UUID, str]] = (
         select(  # type: ignore
