@@ -69,7 +69,7 @@ def test_invalid_parent_id_is_rejected(
     response = client.patch(
         ROUTE, params={"id": wt1_id}, json=payload, headers=primary_test_user.auth
     )
-    assert response.status_code == 400
+    assert response.status_code == 404
     with session_factory() as session:
         # Confirm that the record wasn't modified.
         query = select(WorkoutType).where(WorkoutType.id == wt1.id)
