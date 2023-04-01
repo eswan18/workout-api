@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy.schema import CheckConstraint, ForeignKey
 from sqlalchemy.types import Integer, Double, Text, DateTime, UUID
 from sqlalchemy.sql.elements import ColumnElement
-from sqlalchemy.sql import Select, select, and_, values, column, literal, or_
+from sqlalchemy.sql import Select, select, and_, values, column, literal
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.db.database import Base
@@ -151,27 +151,19 @@ class Exercise(Base, ModificationTimesMixin):
 
         Result rows are tuples of (parent_type, parent_id).
         """
+
         workout_ids = values(column("id", UUID), name="workout_ids").data(
             [(r.workout_id,) for r in records]
         )
-        # The SQL this represents:
-        # SELECT
-        #   id AS ref_id,
-        #   'workout' AS ref_type
-        # FROM [the record IDs]
-        # WHERE id NOT IN (
-        #   SELECT id FROM workouts
-        #   WHERE user_id = [user_id]
-        # )
+        # Find workouts that aren't among workouts the user can read.
         workout_query: Select[tuple[uuid.UUID, str]] = (
             select(  # type: ignore
                 column("id").label("ref_id"), literal("workout").label("ref_type")
             )
             .select_from(workout_ids)
             .where(
-                # where the workout isn't owned by the user:
                 column("id").not_in(
-                    select(Workout.id).where(Workout.user_id == user.id)
+                    select(Workout.id).where(Workout.readable_by(user=user))
                 )
             )
         )
@@ -179,15 +171,7 @@ class Exercise(Base, ModificationTimesMixin):
         ex_tp_ids = values(column("id", UUID), name="exercise_type_ids").data(
             [(r.exercise_type_id,) for r in records]
         )
-        # The SQL this represents:
-        # SELECT
-        #   id AS ref_id,
-        #   'exercise_type' AS ref_type
-        # FROM [the record IDs]
-        # WHERE id NOT IN (
-        #   SELECT id FROM exercise_types
-        #   WHERE owner_user_id = [user_id] OR owner_user_id IS NULL
-        # )
+        # Find exercise types that aren't among exercise types the user can read.
         ex_tp_query: Select[tuple[uuid.UUID, str]] = (
             select(  # type: ignore
                 column("id").label("ref_id"),
@@ -195,15 +179,9 @@ class Exercise(Base, ModificationTimesMixin):
             )
             .select_from(ex_tp_ids)
             .where(
-                # where the exercise type isn't public or owned by the user:
                 column("id").not_in(
                     select(ExerciseType.id).where(
-                        # Note: doing .owner_user_id.in_((user.id, None)) here doesn't
-                        # work; we need the OR for some reason.
-                        or_(
-                            ExerciseType.owner_user_id == user.id,
-                            ExerciseType.owner_user_id.is_(None),
-                        ),
+                        ExerciseType.readable_by(user=user)
                     )
                 )
             )
