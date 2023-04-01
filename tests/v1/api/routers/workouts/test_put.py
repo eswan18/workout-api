@@ -107,14 +107,14 @@ def test_user_can_set_workout_type_to_public_one(
     assert response.status_code == 200
 
 
-def test_user_cant_set_workout_type_to_one_that_isnt_theirs(
+def test_user_cant_set_workout_type_to_one_owned_by_another_user(
     client: TestClient,
     primary_test_user: UserWithAuth,
     primary_user_workouts: tuple[Workout, ...],
     secondary_user_workout_type: WorkoutType,
     postable_payload: dict[str, str],
 ):
-    """Users can't update a workout to set its type to one that isn't theirs."""
+    """Users can't update a workout to set its type to one owned by another user."""
     # Get a workout owned by the primary user.
     wkt = primary_user_workouts[0]
     # Try to update the workout's type to one owned by the secondary user.

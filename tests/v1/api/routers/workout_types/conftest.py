@@ -70,9 +70,7 @@ def secondary_user_workout_type(
     yield wt1
 
     with session_factory() as session:
-        session.execute(
-            delete(WorkoutType).where(WorkoutType.id == wt1.id)
-        )
+        session.execute(delete(WorkoutType).where(WorkoutType.id == wt1.id))
         session.commit()
 
 
