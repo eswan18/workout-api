@@ -151,41 +151,39 @@ class Exercise(Base, ModificationTimesMixin):
 
         Result rows are tuples of (parent_type, parent_id).
         """
-
-        workout_ids = values(column("id", UUID), name="workout_ids").data(
-            [(r.workout_id,) for r in records]
+        missing_wkt_query = _missing_references_query_by_model(
+            ids=(r.workout_id for r in records), user=user, model=Workout
         )
-        # Find workouts that aren't among workouts the user can read.
-        workout_query: Select[tuple[uuid.UUID, str]] = (
-            select(  # type: ignore
-                column("id").label("ref_id"), literal("workout").label("ref_type")
-            )
-            .select_from(workout_ids)
-            .where(
-                column("id").not_in(
-                    select(Workout.id).where(Workout.readable_by(user=user))
-                )
-            )
+        missing_ex_tps_query = _missing_references_query_by_model(
+            ids=(r.exercise_type_id for r in records), user=user, model=ExerciseType
         )
 
-        ex_tp_ids = values(column("id", UUID), name="exercise_type_ids").data(
-            [(r.exercise_type_id,) for r in records]
-        )
-        # Find exercise types that aren't among exercise types the user can read.
-        ex_tp_query: Select[tuple[uuid.UUID, str]] = (
-            select(  # type: ignore
-                column("id").label("ref_id"),
-                literal("exercise_type").label("ref_type"),
-            )
-            .select_from(ex_tp_ids)
-            .where(
-                column("id").not_in(
-                    select(ExerciseType.id).where(
-                        ExerciseType.readable_by(user=user)
-                    )
-                )
-            )
-        )
-
-        query = workout_query.union_all(ex_tp_query)
+        query = missing_ex_tps_query.union(missing_wkt_query)
         return cast(Select[tuple[uuid.UUID, str]], query)
+
+
+def _missing_references_query_by_model(
+    ids: Iterable[uuid.UUID],
+    user: User,
+    model: type[Base],
+) -> Select[tuple[uuid.UUID, str]]:
+    # IDs of the records we're checking.
+    id_values = values(column("id", UUID), name="record_ids").data(
+        [(id,) for id in ids]
+    )
+    # Find which IDs don't match up to a resource that's visible to this user.
+    query: Select[tuple[uuid.UUID, str]] = (
+        select(  # type: ignore
+            column("id").label("ref_id"),
+            literal(model.__name__).label("ref_type"),
+        )
+        .select_from(id_values)
+        .where(
+            column("id").not_in(
+                # This line relies on the model class having some features that all the
+                # "standard" models do: a `id` column, and a `readable_by` method.
+                select(model.id).where(model.readable_by(user=user))  # type: ignore [attr-defined]
+            )
+        )
+    )
+    return cast(Select[tuple[uuid.UUID, str]], query)
