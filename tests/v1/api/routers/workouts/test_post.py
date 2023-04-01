@@ -1,6 +1,5 @@
 from uuid import UUID, uuid4
 
-import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.sql import select, delete
@@ -58,7 +57,7 @@ def test_invalid_workout_type_id_is_rejected(
     random_id = uuid4()
     payload["workout_type_id"] = str(random_id)
     response = client.post(ROUTE, json=payload, headers=primary_test_user.auth)
-    assert response.status_code == 400
+    assert response.status_code == 404
     with session_factory() as session:
         # Confirm that no record was added to the database.
         query = select(Workout).where(Workout.workout_type_id == random_id)
@@ -71,7 +70,6 @@ def test_user_cant_create_workout_for_workout_type_that_isnt_theirs(
     secondary_test_user: UserWithAuth,
     postable_payload: dict[str, str],
     primary_user_workouts: tuple[Workout, ...],
-    session_factory: sessionmaker[Session],
 ):
     # Get the workout_id of an existing workout, which is specific to the primary user.
     wt_id = str(primary_user_workouts[0].workout_type_id)
@@ -79,8 +77,6 @@ def test_user_cant_create_workout_for_workout_type_that_isnt_theirs(
     # specific to the primary user.
     payload = postable_payload.copy()
     payload["workout_type_id"] = wt_id
-    # Force an xfail in the test so that we don't actually create the resource and have
-    # to delete it.
-    pytest.xfail("This check isn't implemented in the endpoint yet.")
+
     response = client.post(ROUTE, json=payload, headers=secondary_test_user.auth)
-    assert response.status_code == 400
+    assert response.status_code == 404
