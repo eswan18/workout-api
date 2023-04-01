@@ -24,7 +24,7 @@ def missing_references_to_model_query(
             model.id.label("ref_id"),  # type: ignore [attr-defined]
             literal(model.__name__).label("ref_type"),
         ).where(
-            False  # type: ignore [arg-type]
+            literal(False)
         )
         return cast(Select[tuple[uuid.UUID, str]], empty_query)
 
