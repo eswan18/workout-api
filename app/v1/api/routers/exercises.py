@@ -120,12 +120,16 @@ def overwrite_exercise(
 @router.patch("/", status_code=status.HTTP_200_OK, response_model=ExerciseInDB)
 def update_exercise(
     id: UUID,
+    # Body params:
     start_time: datetime | None = Body(_unset),
     weight: float = Body(_unset),
     weight_unit: UnitValue | None = Body(_unset),
     reps: int | None = Body(_unset),
     seconds: int | None = Body(_unset),
     notes: str | None = Body(_unset),
+    workout_id: UUID = Body(_unset),
+    exercise_type_id: UUID = Body(_unset),
+    # Dependencies:
     session_factory: sessionmaker[Session] = Depends(db.get_session_factory),
     current_user: db.User = Depends(get_current_user),
 ) -> db.Exercise:
@@ -155,6 +159,20 @@ def update_exercise(
             record.seconds = seconds
         if not isinstance(notes, _Unset):
             record.notes = notes
+        if not isinstance(workout_id, _Unset):
+            record.workout_id = workout_id
+        if not isinstance(exercise_type_id, _Unset):
+            record.exercise_type_id = exercise_type_id
+
+        # Now that we've transformed the query as needed, make sure the references are
+        # valid.
+        ref_query = db.Exercise.missing_references_query([record], user=current_user)
+        result = session.execute(ref_query).one_or_none()
+        if result is not None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"resource not found: ({result.ref_type}:{result.ref_id})",
+            )
 
         with handle_db_errors(session):
             session.add(record)
