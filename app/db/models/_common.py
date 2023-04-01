@@ -14,14 +14,19 @@ def missing_references_to_model_query(
     model: type[Base],
 ) -> Select[tuple[uuid.UUID, str]]:
     """Build a query for IDs that aren't visible to this user, by resource."""
-    ids_as_records = [(id,) for id in ids]
+    ids_as_records: list[tuple[uuid.UUID, ...]] = [(id,) for id in ids]
 
     if len(ids_as_records) == 0:
-        # This query always returns 0 rows, but it has the right schema.
-        return select(
-            model.id.label("ref_id"),
+        # This query always returns 0 rows, but it has the right schema. It also runs
+        # into a lot of incorrect type hints in sqlalchemy, though tests show that it
+        # works fine.
+        empty_query: Select[tuple[uuid.UUID, str]] = select(  # type: ignore [assignment]
+            model.id.label("ref_id"),  # type: ignore [attr-defined]
             literal(model.__name__).label("ref_type"),
-        ).where(False)
+        ).where(
+            False  # type: ignore [arg-type]
+        )
+        return cast(Select[tuple[uuid.UUID, str]], empty_query)
 
     id_values = values(column("id", UUID), name="record_ids").data(ids_as_records)
     # Find which IDs don't match up to a resource that's visible to this user.
@@ -39,4 +44,4 @@ def missing_references_to_model_query(
             )
         )
     )
-    return cast(Select[tuple[uuid.UUID, str]], query)
+    return query
