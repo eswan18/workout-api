@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Self, Iterable
 import uuid
 from datetime import datetime
 
@@ -12,6 +12,7 @@ from app.db.database import Base
 from app.db.mixins import ModificationTimesMixin
 from .workout_type import WorkoutType
 from .user import User
+from ._common import missing_references_to_model_query
 
 
 class Workout(Base, ModificationTimesMixin):
@@ -134,3 +135,19 @@ class Workout(Base, ModificationTimesMixin):
         if not include_soft_deleted:
             query = query.where(cls.not_soft_deleted())
         return query
+
+    @classmethod
+    def missing_references_query(
+        cls, records: Iterable[Self], user: User
+    ) -> Select[tuple[uuid.UUID, str]]:
+        """
+        Return a Select of referenced workouts types that aren't in the db.
+
+        Result rows are tuples of ('workout_type', parent_id).
+        """
+        missing_ex_tps_query = missing_references_to_model_query(
+            ids=(r.workout_type_id for r in records if r.workout_type_id is not None),
+            user=user,
+            model=WorkoutType,
+        )
+        return missing_ex_tps_query

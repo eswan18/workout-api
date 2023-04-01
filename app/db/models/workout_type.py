@@ -1,6 +1,6 @@
 import uuid
 
-from typing_extensions import Self
+from typing import Self, Iterable
 from sqlalchemy.sql.elements import ColumnElement, BooleanClauseList
 from sqlalchemy.sql import select, and_, Select
 from sqlalchemy.types import Text, UUID
@@ -10,6 +10,7 @@ from sqlalchemy.orm import relationship, backref, Mapped, mapped_column
 from app.db.database import Base
 from app.db.mixins import ModificationTimesMixin
 from .user import User
+from ._common import missing_references_to_model_query
 
 
 class WorkoutType(Base, ModificationTimesMixin):
@@ -103,3 +104,25 @@ class WorkoutType(Base, ModificationTimesMixin):
         if not include_soft_deleted:
             query = query.where(cls.not_soft_deleted())
         return query
+
+    @classmethod
+    def missing_references_query(
+        cls,
+        records: Iterable[Self],
+        user: User,
+    ) -> Select[tuple[uuid.UUID, str]]:
+        """
+        Return a Select of referenced parent workout types that aren't in the db.
+
+        Result rows are tuples of ('workout_type', parent_id).
+        """
+        missing_ex_tps_query = missing_references_to_model_query(
+            ids=(
+                r.parent_workout_type_id
+                for r in records
+                if r.parent_workout_type_id is not None
+            ),
+            user=user,
+            model=WorkoutType,
+        )
+        return missing_ex_tps_query

@@ -1,8 +1,8 @@
-from typing import Self
+from typing import Self, Iterable, cast
 import uuid
 from datetime import datetime
 
-from sqlalchemy.schema import ForeignKey
+from sqlalchemy.schema import CheckConstraint, ForeignKey
 from sqlalchemy.types import Integer, Double, Text, DateTime, UUID
 from sqlalchemy.sql.elements import ColumnElement
 from sqlalchemy.sql import Select, select, and_
@@ -13,10 +13,19 @@ from app.db.mixins import ModificationTimesMixin
 from .user import User
 from .workout import Workout
 from .exercise_type import ExerciseType
+from ._common import missing_references_to_model_query
 
 
 class Exercise(Base, ModificationTimesMixin):
     __tablename__ = "exercises"
+    __table_args__ = (
+        # Users can only create exercises in their own workouts.
+        CheckConstraint("user_id = workout.user_id"),
+        # Users can only create exercises of types they own or of public types.
+        CheckConstraint(
+            "user_id = exercise_type.user_id OR exercise_type.user_id IS NULL"
+        ),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
@@ -133,3 +142,22 @@ class Exercise(Base, ModificationTimesMixin):
         if not include_soft_deleted:
             query = query.where(cls.not_soft_deleted())
         return query
+
+    @classmethod
+    def missing_references_query(
+        cls, records: Iterable[Self], user: User
+    ) -> Select[tuple[uuid.UUID, str]]:
+        """
+        Return a Select of referenced workouts/exercise types that aren't in the db.
+
+        Result rows are tuples of (parent_type, parent_id).
+        """
+        missing_wkt_query = missing_references_to_model_query(
+            ids=(r.workout_id for r in records), user=user, model=Workout
+        )
+        missing_ex_tps_query = missing_references_to_model_query(
+            ids=(r.exercise_type_id for r in records), user=user, model=ExerciseType
+        )
+
+        query = missing_ex_tps_query.union(missing_wkt_query)
+        return cast(Select[tuple[uuid.UUID, str]], query)

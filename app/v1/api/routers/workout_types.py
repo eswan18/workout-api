@@ -55,6 +55,19 @@ def create_workout_type(
 
     records = [wk_tp.to_orm_model(owner_user_id=current_user.id) for wk_tp in wkt_tps]
     with session_factory(expire_on_commit=False) as session:
+        # First check that the referenced parent workout types exist and are visible to
+        # the user.
+        query = db.WorkoutType.missing_references_query(records, user=current_user)
+        result = session.execute(query)
+        missing_references = list(result)
+        if len(missing_references) > 0:
+            resources_as_str = ", ".join(
+                f"{ref.ref_type}:{ref.ref_id}" for ref in missing_references
+            )
+            raise HTTPException(
+                status_code=404,
+                detail=f"resource(s) not found: ({resources_as_str})",
+            )
         with handle_db_errors(session):
             session.add_all(records)
             session.commit()
@@ -83,6 +96,14 @@ def overwrite_workout_type(
             )
         # Update the record in-place.
         workout_type.update_orm_model(record)
+        # Check that the new reference values are valid.
+        ref_query = db.WorkoutType.missing_references_query([record], user=current_user)
+        result = session.execute(ref_query).one_or_none()
+        if result is not None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"resource not found: {result.ref_type}:{result.ref_id}",
+            )
         with handle_db_errors(session):
             session.add(record)
             session.commit()
@@ -118,6 +139,16 @@ def update_workout_type(
             record.notes = notes
         if not isinstance(parent_workout_type_id, _Unset):
             record.parent_workout_type_id = parent_workout_type_id
+
+        # Now that we've transformed the query as needed, make sure the references are
+        # valid.
+        ref_query = db.WorkoutType.missing_references_query([record], user=current_user)
+        result = session.execute(ref_query).one_or_none()
+        if result is not None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"resource not found: ({result.ref_type}:{result.ref_id})",
+            )
 
         with handle_db_errors(session):
             session.add(record)

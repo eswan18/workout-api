@@ -6,7 +6,7 @@ from sqlalchemy.sql import select
 from sqlalchemy.orm import sessionmaker, Session
 
 from app.db.models.user import UserWithAuth
-from app.db import Exercise
+from app.db import Exercise, Workout, ExerciseType
 
 
 ROUTE = "/exercises"
@@ -82,3 +82,35 @@ def test_partial_payload_is_accepted(
         assert record.start_time == datetime.fromisoformat(
             postable_payload["start_time"]
         )
+
+
+def test_user_cant_set_workout_to_one_that_isnt_theirs(
+    client: TestClient,
+    primary_test_user: UserWithAuth,
+    primary_user_exercises: tuple[Exercise, ...],
+    secondary_user_workout_and_exercise_type: tuple[Workout, ExerciseType],
+):
+    # Get an exercise owned by the primary user.
+    ex = primary_user_exercises[0]
+    # Try to set the workout to one owned by the secondary user.
+    payload = {"workout_id": str(secondary_user_workout_and_exercise_type[0].id)}
+    response = client.patch(
+        ROUTE, params={"id": str(ex.id)}, json=payload, headers=primary_test_user.auth
+    )
+    assert response.status_code == 404
+
+
+def test_user_cant_set_exercise_type_to_one_that_isnt_theirs(
+    client: TestClient,
+    primary_test_user: UserWithAuth,
+    primary_user_exercises: tuple[Exercise, ...],
+    secondary_user_workout_and_exercise_type: tuple[Workout, ExerciseType],
+):
+    # Get an exercise owned by the primary user.
+    ex = primary_user_exercises[0]
+    # Try to set the exercise type to one owned by the secondary user.
+    payload = {"exercise_type_id": str(secondary_user_workout_and_exercise_type[1].id)}
+    response = client.patch(
+        ROUTE, params={"id": str(ex.id)}, json=payload, headers=primary_test_user.auth
+    )
+    assert response.status_code == 404
