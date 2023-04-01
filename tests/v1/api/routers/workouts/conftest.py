@@ -41,6 +41,27 @@ def primary_user_workout_type(
 
 
 @pytest.fixture(scope="function")
+def secondary_user_workout_type(
+    session_factory: sessionmaker[Session], secondary_test_user: UserWithAuth
+) -> Iterator[WorkoutType]:
+    """Add a workout type to the db owned by the primary user."""
+    user_id = secondary_test_user.user.id
+    with session_factory(expire_on_commit=False) as session:
+        wt = WorkoutType(
+            name="a new workout type for the secondary user",
+            owner_user_id=user_id,
+        )
+        session.add(wt)
+        session.commit()
+
+    yield wt
+
+    with session_factory() as session:
+        session.execute(delete(WorkoutType).where(WorkoutType.id == wt.id))
+        session.commit()
+
+
+@pytest.fixture(scope="function")
 def primary_user_workouts(
     session_factory: sessionmaker[Session],
     primary_test_user: UserWithAuth,
