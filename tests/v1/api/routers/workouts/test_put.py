@@ -82,6 +82,31 @@ def test_partial_payload_is_rejected(
         assert record.start_time == wkt1_start_time
 
 
+def test_user_can_set_workout_type_to_public_one(
+    client: TestClient,
+    primary_test_user: UserWithAuth,
+    primary_user_workouts: tuple[Workout, ...],
+    public_workout_type: WorkoutType,
+    postable_payload: dict[str, str],
+):
+    """
+    Users can update a workout to set its type to a public one.
+
+    Since we have a test that setting a workout type to one owned by another user isn't
+    allowed, this test is a good check to be sure we're not disallowing public workout
+    types as well.
+    """
+    # Get a workout owned by the primary user.
+    wkt = primary_user_workouts[0]
+    # Try to update the workout's type to one owned by the secondary user.
+    payload = postable_payload.copy()
+    payload["workout_type_id"] = str(public_workout_type.id)
+    response = client.put(
+        ROUTE, params={"id": str(wkt.id)}, json=payload, headers=primary_test_user.auth
+    )
+    assert response.status_code == 200
+
+
 def test_user_cant_set_workout_type_to_one_that_isnt_theirs(
     client: TestClient,
     primary_test_user: UserWithAuth,
