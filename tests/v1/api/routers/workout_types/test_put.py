@@ -99,3 +99,46 @@ def test_partial_payload_is_rejected(
         query = select(WorkoutType).where(WorkoutType.id == wt1.id)
         record = session.execute(query).scalars().one()
         assert record.notes == wt1_notes
+
+
+def test_user_can_set_parent_workout_type_to_a_public_one(
+    client: TestClient,
+    primary_test_user: UserWithAuth,
+    primary_user_workout_types: tuple[WorkoutType, ...],
+    public_workout_type: WorkoutType,
+    postable_payload: dict[str, str],
+):
+    """
+    Users can update a workout type to set its parent to a public one.
+
+    Since we test that users can't set a parent to one that's owned by another user,
+    this is a good check to be sure we're not disallowing public workout types as well.
+    """
+    # Get a workout owned by the primary user.
+    wkt = primary_user_workout_types[1]
+    # Try to update the workout type's parent to one owned by the secondary user.
+    payload = postable_payload.copy()
+    payload["parent_workout_type_id"] = str(public_workout_type.id)
+    response = client.put(
+        ROUTE, params={"id": str(wkt.id)}, json=payload, headers=primary_test_user.auth
+    )
+    assert response.status_code == 200
+
+
+def test_user_cant_set_parent_workout_type_to_one_that_isnt_theirs(
+    client: TestClient,
+    primary_test_user: UserWithAuth,
+    primary_user_workout_types: tuple[WorkoutType, ...],
+    secondary_user_workout_type: WorkoutType,
+    postable_payload: dict[str, str],
+):
+    """Users can't update a workout type to set its parent to one that isn't theirs."""
+    # Get a workout owned by the primary user.
+    wkt = primary_user_workout_types[1]
+    # Try to update the workout type's parent to one owned by the secondary user.
+    payload = postable_payload.copy()
+    payload["parent_workout_type_id"] = str(secondary_user_workout_type.id)
+    response = client.put(
+        ROUTE, params={"id": str(wkt.id)}, json=payload, headers=primary_test_user.auth
+    )
+    assert response.status_code == 404

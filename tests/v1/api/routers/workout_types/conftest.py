@@ -19,7 +19,11 @@ def postable_payload():
 
 @pytest.fixture(scope="function")
 def primary_user_workout_types(
-    session_factory: sessionmaker[Session], primary_test_user: UserWithAuth
+    session_factory: sessionmaker[Session],
+    primary_test_user: UserWithAuth,
+    # Making the public workout type a dependency forces workout types to be torn down
+    # before that one is, which makes easier some tests in which we modify these.
+    public_workout_type: WorkoutType,
 ) -> Iterator[tuple[WorkoutType, ...]]:
     """Add workout types to the db owned by the primary user."""
     user_id = primary_test_user.user.id
@@ -45,6 +49,29 @@ def primary_user_workout_types(
     with session_factory() as session:
         session.execute(
             delete(WorkoutType).where(WorkoutType.id.in_(row.id for row in rows))
+        )
+        session.commit()
+
+
+@pytest.fixture(scope="function")
+def secondary_user_workout_type(
+    session_factory: sessionmaker[Session], secondary_test_user: UserWithAuth
+) -> Iterator[WorkoutType]:
+    """Add a workout type to the db owned by the secondary user."""
+    user_id = secondary_test_user.user.id
+    with session_factory(expire_on_commit=False) as session:
+        wt1 = WorkoutType(
+            name="a new workout type 1",
+            owner_user_id=user_id,
+        )
+        session.add(wt1)
+        session.commit()
+
+    yield wt1
+
+    with session_factory() as session:
+        session.execute(
+            delete(WorkoutType).where(WorkoutType.id == wt1.id)
         )
         session.commit()
 
