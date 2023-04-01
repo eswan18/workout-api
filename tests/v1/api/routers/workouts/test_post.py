@@ -73,8 +73,7 @@ def test_user_cant_create_workout_for_workout_type_that_isnt_theirs(
 ):
     # Get the workout_id of an existing workout, which is specific to the primary user.
     wt_id = str(primary_user_workouts[0].workout_type_id)
-    # The postable_payload references a workout_id and exercise_type_id that are both
-    # specific to the primary user.
+    # The postable_payload references a parent_id that is specific to the primary user.
     payload = postable_payload.copy()
     payload["workout_type_id"] = wt_id
 
