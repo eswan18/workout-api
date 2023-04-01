@@ -57,7 +57,7 @@ def test_invalid_parent_id_is_rejected(
     parent_id = uuid4()
     payload["parent_workout_type_id"] = str(parent_id)
     response = client.post(ROUTE, json=payload, headers=primary_test_user.auth)
-    assert response.status_code == 400
+    assert response.status_code == 404
     with session_factory() as session:
         # Confirm that no record was added to the database.
         query = select(WorkoutType).where(

@@ -64,7 +64,7 @@ def create_workouts(
 
     records = [wkt.to_orm_model(user_id=current_user.id) for wkt in wkts]
     with session_factory(expire_on_commit=False) as session:
-        # First check that the references workout types exist and are visible to the
+        # First check that the referenced workout types exist and are visible to the
         # user.
         query = db.Workout.missing_references_query(records, user=current_user)
         result = session.execute(query)
