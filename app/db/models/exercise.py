@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy.schema import CheckConstraint, ForeignKey
 from sqlalchemy.types import Integer, Double, Text, DateTime, UUID
 from sqlalchemy.sql.elements import ColumnElement
-from sqlalchemy.sql import Select, select, and_, values, column, literal
+from sqlalchemy.sql import Select, select, and_
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.db.database import Base
@@ -13,6 +13,7 @@ from app.db.mixins import ModificationTimesMixin
 from .user import User
 from .workout import Workout
 from .exercise_type import ExerciseType
+from ._common import missing_references_to_model_query
 
 
 class Exercise(Base, ModificationTimesMixin):
@@ -151,39 +152,12 @@ class Exercise(Base, ModificationTimesMixin):
 
         Result rows are tuples of (parent_type, parent_id).
         """
-        missing_wkt_query = _missing_references_query_by_model(
+        missing_wkt_query = missing_references_to_model_query(
             ids=(r.workout_id for r in records), user=user, model=Workout
         )
-        missing_ex_tps_query = _missing_references_query_by_model(
+        missing_ex_tps_query = missing_references_to_model_query(
             ids=(r.exercise_type_id for r in records), user=user, model=ExerciseType
         )
 
         query = missing_ex_tps_query.union(missing_wkt_query)
         return cast(Select[tuple[uuid.UUID, str]], query)
-
-
-def _missing_references_query_by_model(
-    ids: Iterable[uuid.UUID],
-    user: User,
-    model: type[Base],
-) -> Select[tuple[uuid.UUID, str]]:
-    # IDs of the records we're checking.
-    id_values = values(column("id", UUID), name="record_ids").data(
-        [(id,) for id in ids]
-    )
-    # Find which IDs don't match up to a resource that's visible to this user.
-    query: Select[tuple[uuid.UUID, str]] = (
-        select(  # type: ignore
-            column("id").label("ref_id"),
-            literal(model.__name__).label("ref_type"),
-        )
-        .select_from(id_values)
-        .where(
-            column("id").not_in(
-                # This line relies on the model class having some features that all the
-                # "standard" models do: a `id` column, and a `readable_by` method.
-                select(model.id).where(model.readable_by(user=user))  # type: ignore [attr-defined]
-            )
-        )
-    )
-    return cast(Select[tuple[uuid.UUID, str]], query)
