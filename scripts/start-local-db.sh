@@ -24,6 +24,9 @@ fi
 echo
 echo "start-local-db: Starting postgres container"
 echo "-------------------------------------------"
+
+# Note: as of 2023-04-01, Amazon Aurora's latest compatible PG version was 14.6 so
+# that's what we use here.
 container_id=$(
     docker run \
     --name ${container_name} \
