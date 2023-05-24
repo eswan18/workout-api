@@ -20,3 +20,9 @@ test:
 	coverage run --source $(SRC_DIR) -m pytest
 
 check: lint typecheck test
+
+docker-build:
+	docker build --target=runtime . -t workout-api:latest
+
+docker-run:
+	docker-compose up

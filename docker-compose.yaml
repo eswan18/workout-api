@@ -1,0 +1,6 @@
+version: '3'
+services:
+  workout-api:
+    image: workout-api
+    env_file:
+      - ./local-env.sh
