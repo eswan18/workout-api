@@ -19,7 +19,7 @@ passlib = "^1.7.4"
 python-multipart = "^0.0.5"
 bcrypt = "^3.2.2"
 certifi = "^2022.12.7"
-psycopg = "^3.1.8"
+psycopg = {extras = ["binary"], version = "^3.1.8"}
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.1.2"
