@@ -98,12 +98,13 @@ def overwrite_workout_type(
         workout_type.update_orm_model(record)
         # Check that the new reference values are valid.
         ref_query = db.WorkoutType.missing_references_query([record], user=current_user)
-        result = session.execute(ref_query).one_or_none()
-        if result is not None:
-            raise HTTPException(
-                status_code=404,
-                detail=f"resource not found: {result.ref_type}:{result.ref_id}",
-            )
+        with session.no_autoflush:
+            result = session.execute(ref_query).one_or_none()
+            if result is not None:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"resource not found: {result.ref_type}:{result.ref_id}",
+                )
         with handle_db_errors(session):
             session.add(record)
             session.commit()
@@ -143,12 +144,13 @@ def update_workout_type(
         # Now that we've transformed the query as needed, make sure the references are
         # valid.
         ref_query = db.WorkoutType.missing_references_query([record], user=current_user)
-        result = session.execute(ref_query).one_or_none()
-        if result is not None:
-            raise HTTPException(
-                status_code=404,
-                detail=f"resource not found: ({result.ref_type}:{result.ref_id})",
-            )
+        with session.no_autoflush:
+            result = session.execute(ref_query).one_or_none()
+            if result is not None:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"resource not found: ({result.ref_type}:{result.ref_id})",
+                )
 
         with handle_db_errors(session):
             session.add(record)
