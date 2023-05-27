@@ -22,7 +22,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 def get_user_by_email(session_factory: sessionmaker[Session], email: str) -> db.User:
     query = select(db.User).filter_by(email=email)
     with session_factory() as session:
-        user = session.scalars(query).one()
+        user = session.scalars(query).one_or_none()
     if user is None:
         raise ValueError(f"User with email '{email}' does not exist")
     return user
