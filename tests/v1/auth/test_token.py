@@ -24,14 +24,14 @@ def fake_get_user_by_email(session: Any, email: str) -> db_models.User:
 
 @pytest.mark.anyio
 async def test_can_get_user_from_valid_jwt():
-    jwt = auth.create_access_token(
+    jwt = auth.create_jwt(
         {"sub": FAKE_USER_DATA["email"]},
         timedelta(days=1),
     )
     with patch("app.v1.auth.get_user_by_email", wraps=fake_get_user_by_email) as spy:
         fake_session_factory = None
         retrieved_user = await auth.get_current_user(
-            token=jwt, session_factory=fake_session_factory
+            token=jwt.access_token, session_factory=fake_session_factory
         )
         spy.assert_called_once_with(fake_session_factory, email=FAKE_USER_DATA["email"])
         assert retrieved_user is FAKE_USER
@@ -39,7 +39,7 @@ async def test_can_get_user_from_valid_jwt():
 
 @pytest.mark.anyio
 async def test_auth_fails_with_expired_jwt():
-    jwt = auth.create_access_token(
+    jwt = auth.create_jwt(
         {"sub": FAKE_USER_DATA["email"]},
         timedelta(days=1),
     )
@@ -54,14 +54,15 @@ async def test_auth_fails_with_expired_jwt():
             fake_session_factory = None
             with pytest.raises(HTTPException):
                 await auth.get_current_user(
-                    token=jwt, session_factory=fake_session_factory
+                    token=jwt.access_token, session_factory=fake_session_factory
                 )
 
 
-def test_token_payload_contains_expected_keys():
-    payload = auth.generate_jwt(
+def test_jwt_payload_contains_expected_keys():
+    payload = auth.create_jwt_payload(
         email=FAKE_USER_DATA["email"],
     )
-    assert len(payload) == 2
+    assert len(payload) == 3
     assert "access_token" in payload
     assert payload["token_type"] == "bearer"
+    assert isinstance(payload["expiration_timestamp"], (int, float))

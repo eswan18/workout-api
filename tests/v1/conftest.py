@@ -14,7 +14,7 @@ from app.db.utils import recursive_hard_delete
 from app.db.database import get_session_factory_sync
 from app.db.models.user import UserWithAuth
 from app.db.models import ExerciseType, WorkoutType
-from app.v1.auth import hash_pw, generate_jwt
+from app.v1.auth import hash_pw, create_jwt_payload
 
 
 @pytest.fixture(scope="session")
@@ -47,7 +47,7 @@ def primary_test_user(session_factory) -> Iterator[UserWithAuth]:
         session.add(user)
         session.commit()
 
-    jwt = generate_jwt(user.email)
+    jwt = create_jwt_payload(user.email)
     auth_header = {"Authorization": f"Bearer {jwt['access_token']}"}
 
     yield UserWithAuth(user, auth_header)
@@ -76,7 +76,7 @@ def secondary_test_user(session_factory) -> Iterator[UserWithAuth]:
         session.add(user)
         session.commit()
 
-    jwt = generate_jwt(user.email)
+    jwt = create_jwt_payload(user.email)
     auth_header = {"Authorization": f"Bearer {jwt['access_token']}"}
 
     yield UserWithAuth(user, auth_header)
