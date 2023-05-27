@@ -63,4 +63,4 @@ def test_jwt_payload_contains_expected_keys():
         email=FAKE_USER_DATA["email"],
     )
     assert token.token_type == "bearer"
-    assert token.expiration_timestamp > datetime.utcnow()
+    assert token.expiration_time > datetime.utcnow()

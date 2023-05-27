@@ -107,7 +107,7 @@ def create_jwt_token(
     return Token(
         access_token=jwt.access_token,
         token_type="bearer",
-        expiration_timestamp=datetime.fromtimestamp(jwt.expiration_timestamp),
+        expiration_time=datetime.fromtimestamp(jwt.expiration_timestamp),
     )
 
 
