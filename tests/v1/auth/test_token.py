@@ -59,10 +59,8 @@ async def test_auth_fails_with_expired_jwt():
 
 
 def test_jwt_payload_contains_expected_keys():
-    payload = auth.create_jwt_payload(
+    token = auth.create_jwt_token(
         email=FAKE_USER_DATA["email"],
     )
-    assert len(payload) == 3
-    assert "access_token" in payload
-    assert payload["token_type"] == "bearer"
-    assert isinstance(payload["expiration_timestamp"], (int, float))
+    assert token.token_type == "bearer"
+    assert token.expiration_timestamp > datetime.utcnow()
