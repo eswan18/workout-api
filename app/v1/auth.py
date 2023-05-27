@@ -1,5 +1,6 @@
 import os
 from datetime import datetime, timedelta
+from dataclasses import dataclass
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -17,6 +18,12 @@ ACCESS_TOKEN_EXPIRATION_MINUTES = 60 * 24  # One day
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+@dataclass
+class JWT:
+    access_token: str
+    expiration_timestamp: float
 
 
 def get_user_by_email(session_factory: sessionmaker[Session], email: str) -> db.User:
@@ -91,20 +98,22 @@ def authenticate_user(
         return None
 
 
-def generate_jwt(
+def create_jwt_payload(
     email: str,
     expiration_delta: timedelta = timedelta(minutes=ACCESS_TOKEN_EXPIRATION_MINUTES),
-) -> dict[str, str]:
-    access_token = create_access_token(
-        data={"sub": email}, expiration_delta=expiration_delta
-    )
-    return {"access_token": access_token, "token_type": "bearer"}
+) -> dict[str, str | float]:
+    jwt = create_jwt(data={"sub": email}, expiration_delta=expiration_delta)
+    return {
+        "access_token": jwt.access_token,
+        "token_type": "bearer",
+        "expiration_timestamp": jwt.expiration_timestamp,
+    }
 
 
-def create_access_token(
+def create_jwt(
     data: dict[str, str],
     expiration_delta: timedelta,
-) -> str:
+) -> JWT:
     """
     Create a jwt for a user, with specified time-to-live.
     """
@@ -112,7 +121,7 @@ def create_access_token(
     expire_time_numeric = int(expire_time.timestamp())
     to_encode = data | {"exp": expire_time_numeric}
     encoded_jwt = jwt.encode(to_encode, APP_SECRET, algorithm=ALGORITHM)
-    return encoded_jwt
+    return JWT(access_token=encoded_jwt, expiration_timestamp=expire_time_numeric)
 
 
 def decode_jwt(token: str) -> dict[str, str]:
