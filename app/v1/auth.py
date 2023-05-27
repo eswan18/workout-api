@@ -10,6 +10,7 @@ from sqlalchemy.sql import select
 from sqlalchemy.orm import Session, sessionmaker
 
 from app import db
+from app.v1.models.token import Token
 
 
 APP_SECRET = os.environ["APP_SECRET"]
@@ -98,16 +99,16 @@ def authenticate_user(
         return None
 
 
-def create_jwt_payload(
+def create_jwt_token(
     email: str,
     expiration_delta: timedelta = timedelta(minutes=ACCESS_TOKEN_EXPIRATION_MINUTES),
-) -> dict[str, str | float]:
+) -> Token:
     jwt = create_jwt(data={"sub": email}, expiration_delta=expiration_delta)
-    return {
-        "access_token": jwt.access_token,
-        "token_type": "bearer",
-        "expiration_timestamp": jwt.expiration_timestamp,
-    }
+    return Token(
+        access_token=jwt.access_token,
+        token_type="bearer",
+        expiration_timestamp=datetime.fromtimestamp(jwt.expiration_timestamp),
+    )
 
 
 def create_jwt(
