@@ -69,6 +69,6 @@ jobs:
         env:
           APP_SECRET: dummysecret
           DATABASE_URL: "postgresql://postgres:postgres@localhost/workout_api"
-          USER_CREATION_SECRET: lestibournes
+          STATIC_APPLICATION_KEY: lestibournes
         run:
           poetry run make test

@@ -1,4 +1,3 @@
-import os
 from datetime import datetime, timezone, timedelta
 
 from sqlalchemy.orm import sessionmaker, Session
@@ -9,9 +8,6 @@ from app.db.models.user import UserWithAuth
 from app.db.models import ExerciseType
 
 from .api_client import ApiClient
-
-
-USER_CREATION_SECRET = os.environ["USER_CREATION_SECRET"]
 
 
 def test_flow(

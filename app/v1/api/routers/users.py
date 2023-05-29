@@ -10,7 +10,7 @@ from app import db
 from app.v1.auth import hash_pw
 from app.v1.lifecycle import publish_lifeycle_event, Action
 
-USER_CREATION_SECRET = os.environ["USER_CREATION_SECRET"]
+STATIC_APPLICATION_KEY = os.environ["STATIC_APPLICATION_KEY"]
 
 router = APIRouter(prefix="/users")
 
@@ -24,7 +24,7 @@ def create_user(
     """
     Create a new user. Requires a secret string, for now.
     """
-    if secret != USER_CREATION_SECRET:
+    if secret != STATIC_APPLICATION_KEY:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect user creation secret",

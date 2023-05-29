@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 from app.db.utils import recursive_hard_delete
 
 
-USER_CREATION_SECRET = os.environ["USER_CREATION_SECRET"]
+STATIC_APPLICATION_KEY = os.environ["STATIC_APPLICATION_KEY"]
 
 
 def test_flow(client: TestClient, session_factory: sessionmaker[Session]):
@@ -27,7 +27,7 @@ def test_flow(client: TestClient, session_factory: sessionmaker[Session]):
             "email": user_email,
             "password": user_password,
         },
-        "secret": USER_CREATION_SECRET,
+        "secret": STATIC_APPLICATION_KEY,
     }
     response = client.post("/users/", json=payload)
     assert response.status_code == 201, response.content
