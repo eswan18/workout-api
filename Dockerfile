@@ -25,7 +25,9 @@ FROM python:3.11-slim-bullseye AS runtime
 ENV VIRTUAL_ENV=/app/.venv PATH="/app/.venv/bin:$PATH"
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
-ADD ./setup.cfg ./
+WORKDIR /app
+ADD ./setup.cfg ./alembic.ini ./
 COPY ./app ./app
+COPY ./alembic ./alembic
 
 ENTRYPOINT uvicorn app.main:app --host 0.0.0.0
