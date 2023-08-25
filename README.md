@@ -8,6 +8,8 @@ API hosted with Render at this URL: `https://workout-api-k8e3.onrender.com/v1`
 
 Database hosted with [Neon](https://neon.tech).
 
+## Running the code
+
 This project is built with Poetry and intended to be run that way.
 To run it locally in development you'll need to
 - Install Poetry
@@ -36,4 +38,4 @@ poetry run make serve
 
 ## Database Schema
 
-See here: [link](https://dbdiagram.io/d/63e963d0296d97641d8054fa).
+The original model is here: [link](https://dbdiagram.io/d/63e963d0296d97641d8054fa).
