@@ -5,7 +5,8 @@
 An unnecessarily complicated API layer and set of database migrations for my workout tracker application.
 
 API hosted with Render at this URL: `https://workout-api-k8e3.onrender.com/v1`
-Database with [Neon](https://neon.tech).
+
+Database hosted with [Neon](https://neon.tech).
 
 This project is built with Poetry and intended to be run that way.
 To run it locally in development you'll need to
