@@ -36,6 +36,41 @@ poetry run make serve
 ```
 
 
+# Database Management
+
+There are really just two commands that matter for managing the staging and prod databases. Note that the first one uses the Python environment, so you should run `poetry shell` before kicking these off. Both rely on the `$DATABASE_URL` environment variable.
+
+```bash
+# Run all new migrations.
+alembic upgrade head
+# Drop and replace all views with current definitions.
+./db/run_views.sh
+```
+
+To run them easily against the staging/prod environments, I just use `infisical run`:
+
+```bash
+infisical run --env prod -- alembic upgrade head
+infisical run --env prod -- ./db/run_views.sh
+```
+
+These two commands are enough to bring a database up to schema parity. They ignore seeds though, which are mentioned below.
+
+## Seeds
+
+I have a few "seed" data records in this repo because in early development I needed some data. You can run them with:
+
+```bash
+./db/run_seeds.sh
+```
+
+It's possible to run them in staging/prod too, but that should only be done once (the records have hardcoded IDs so new ones will collide) and really isn't even necessary.
+
+```bash
+infisical run --env prod -- ./db/run_seeds.sh
+```
+
 ## Database Schema
 
 The original model is here: [link](https://dbdiagram.io/d/63e963d0296d97641d8054fa).
+
