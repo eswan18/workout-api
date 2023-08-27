@@ -13,7 +13,7 @@ from app import db
 from app.v1.models.token import Token
 
 
-APP_SECRET = os.environ["APP_SECRET"]
+API_JWT_SECRET = os.environ["API_JWT_SECRET"]
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRATION_MINUTES = 60 * 24  # One day
 
@@ -121,7 +121,7 @@ def create_jwt(
     expire_time = datetime.utcnow() + expiration_delta
     expire_time_numeric = int(expire_time.timestamp())
     to_encode = data | {"exp": expire_time_numeric}
-    encoded_jwt = jwt.encode(to_encode, APP_SECRET, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, API_JWT_SECRET, algorithm=ALGORITHM)
     return JWT(access_token=encoded_jwt, expiration_timestamp=expire_time_numeric)
 
 
@@ -129,5 +129,5 @@ def decode_jwt(token: str) -> dict[str, str]:
     """
     Decode a jwt for a user, with specified time-to-live.
     """
-    payload = jwt.decode(token, APP_SECRET, algorithms=[ALGORITHM])
+    payload = jwt.decode(token, API_JWT_SECRET, algorithms=[ALGORITHM])
     return payload
