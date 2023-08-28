@@ -71,7 +71,7 @@ jobs:
           DATABASE_URL: "postgresql://postgres:postgres@localhost/workout_api"
       - name: Run Test
         env:
-          APP_SECRET: dummysecret
+          API_JWT_SECRET: dummysecret
           DATABASE_URL: "postgresql://postgres:postgres@localhost/workout_api"
           STATIC_APPLICATION_KEY: lestibournes
         run:
