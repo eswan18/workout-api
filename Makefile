@@ -11,7 +11,7 @@ devserve: $(SRC_FILES)
 	uvicorn app.main:app --host 0.0.0.0 --port $(PORT) --reload
 
 lint:
-	flake8 $(SRC_DIR) $(TEST_DIR)
+	ruff check $(SRC_DIR) $(TEST_DIR)
 
 typecheck:
 	mypy $(SRC_DIR)
