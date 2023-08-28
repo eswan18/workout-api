@@ -3,10 +3,14 @@
 [![CI](https://github.com/eswan18/workout_api/actions/workflows/ci.yaml/badge.svg)](https://github.com/eswan18/workout_api/actions/workflows/ci.yaml)
 
 An unnecessarily complicated API layer and set of database migrations for my workout tracker application.
+Can be accessed at this link: `https://workout-api-k8e3.onrender.com/v1`
 
-API hosted with Render at this URL: `https://workout-api-k8e3.onrender.com/v1`
+## Tech Overview
 
-Database hosted with [Neon](https://neon.tech).
+- Built with Python, FastAPI, and SQLAlchemy/Alembic. Tested with Pytest.
+- API hosted with [Render](https://render.com).
+- Database hosted with [Neon](https://neon.tech).
+- Secrets managed in [Infisical](https://infisical.com).
 
 ## Running the code
 
@@ -23,18 +27,11 @@ Then run the following code:
 poetry install
 # Start a new shell within the poetry environment
 poetry shell
-# At this point, you may want to set some environment variables for development
+# At this point, you may want to set some dummy environment variables for development
 . ./local-env.sh
 # Start the server in dev mode
 make devserve
 ```
-
-In production, you should set your variables in a more stable way, and then....
-```bash
-poetry install
-poetry run make serve
-```
-
 
 # Database Management
 
