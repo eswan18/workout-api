@@ -21,4 +21,7 @@ CREATE VIEW v_exercises AS
         et.owner_user_id as exercise_type_owner_user_id
     FROM
         exercises e
-        LEFT JOIN exercise_types et ON e.exercise_type_id = et.id;
+        LEFT JOIN exercise_types et ON e.exercise_type_id = et.id
+    WHERE
+        e.deleted_at IS NULL
+        AND et.deleted_at IS NULL;
