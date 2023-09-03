@@ -16,7 +16,7 @@ def test_unauthenticated_user_cant_read(
 ):
     workout, exercise_type = primary_user_workout_and_exercise_type
     # Try with no creds.
-    response = client.get(ROUTE, params={'id': workout.id})
+    response = client.get(ROUTE, params={"id": workout.id})
     # Make sure we get a 401 and no data comes back.
     assert response.status_code == 401
     assert set(response.json().keys()) == {"detail"}
@@ -24,7 +24,7 @@ def test_unauthenticated_user_cant_read(
     # Try with bad creds.
     bad_user_auth = primary_test_user.auth.copy()
     bad_user_auth.update(Authorization="Bearer 123abc")
-    response = client.get(ROUTE, params={'id': workout.id}, headers=bad_user_auth)
+    response = client.get(ROUTE, params={"id": workout.id}, headers=bad_user_auth)
     # Make sure we get a 401 and no data comes back.
     assert response.status_code == 401
 
@@ -36,13 +36,17 @@ def test_user_cant_read_others_workouts(
     primary_user_exercises: tuple[Exercise, ...],
 ):
     workout, exercise_type = primary_user_workout_and_exercise_type
-    response = client.get(ROUTE, params={'id': workout.id}, headers=secondary_test_user.auth)
+    response = client.get(
+        ROUTE, params={"id": workout.id}, headers=secondary_test_user.auth
+    )
     assert response.status_code == 404
 
 
 def test_invalid_id_returns_404(client: TestClient, primary_test_user: UserWithAuth):
     imaginary_id = uuid4()
-    response = client.get(ROUTE, params={'id': imaginary_id}, headers=primary_test_user.auth)
+    response = client.get(
+        ROUTE, params={"id": imaginary_id}, headers=primary_test_user.auth
+    )
     assert response.status_code == 404
 
 
@@ -56,7 +60,9 @@ def test_returns_correct_workout_details(
     exercises = primary_user_exercises
 
     # Fetch the workout details
-    response = client.get(ROUTE, params={'id': workout.id}, headers=primary_test_user.auth)
+    response = client.get(
+        ROUTE, params={"id": workout.id}, headers=primary_test_user.auth
+    )
     assert response.status_code == 200
     payload = response.json()
     assert len(payload) == 1
@@ -88,7 +94,9 @@ def test_returns_correct_workout_details_when_there_are_no_exercises(
 ):
     workout, exercise_type = primary_user_workout_and_exercise_type
     # Fetch the workout details
-    response = client.get(ROUTE, params={'id': workout.id}, headers=primary_test_user.auth)
+    response = client.get(
+        ROUTE, params={"id": workout.id}, headers=primary_test_user.auth
+    )
     assert response.status_code == 200
     payload = response.json()
     assert len(payload) == 1
@@ -98,3 +106,51 @@ def test_returns_correct_workout_details_when_there_are_no_exercises(
     assert payload_workout["id"] == str(workout.id)
     # Make sure there are no exercises included.
     assert len(payload_item["exercises"]) == 0
+
+
+def test_without_id_still_doesnt_let_user_read_others_workouts(
+    client: TestClient,
+    secondary_test_user: UserWithAuth,
+    primary_user_workout_and_exercise_type: tuple[Workout, ExerciseType],
+    primary_user_exercises: tuple[Exercise, ...],
+):
+    response = client.get(ROUTE, headers=secondary_test_user.auth)
+    assert response.status_code == 404
+
+
+def test_without_id_returns_all_workout_details(
+    client: TestClient,
+    primary_test_user: UserWithAuth,
+    primary_user_workout_and_exercise_type: tuple[Workout, ExerciseType],
+    primary_user_exercises: tuple[Exercise, ...],
+    primary_user_exercise_of_different_type_and_workout: tuple[
+        Workout, ExerciseType, Exercise
+    ],
+):
+    workout, _ = primary_user_workout_and_exercise_type
+    exercises = primary_user_exercises
+    (
+        other_workout,
+        _,
+        other_exercise,
+    ) = primary_user_exercise_of_different_type_and_workout
+
+    # Fetch the workout details
+    response = client.get(ROUTE, headers=primary_test_user.auth)
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload) == 2
+    # Make sure each one has the correct workout ID and exercises.
+    payload_wkt_id = {item["workout"]["id"] for item in payload}
+    assert payload_wkt_id == {str(workout.id), str(other_workout.id)}
+    main_exercises_ids = {str(exercise.id) for exercise in exercises}
+    other_exercise_id = str(other_exercise.id)
+    for item in payload:
+        if item["workout"]["id"] == str(workout.id):
+            assert {
+                str(exercise["id"]) for exercise in item["exercises"]
+            } == main_exercises_ids
+        else:
+            assert {str(exercise["id"]) for exercise in item["exercises"]} == {
+                other_exercise_id
+            }

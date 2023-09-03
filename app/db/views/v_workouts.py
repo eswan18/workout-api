@@ -3,8 +3,11 @@ from datetime import datetime
 from typing import Literal
 
 from sqlalchemy.orm import Session
-from sqlalchemy.sql import text, select, column, table
+from sqlalchemy.sql import select, text, desc
+from sqlalchemy.schema import Table
+from sqlalchemy.sql.elements import UnaryExpression
 from pydantic import BaseModel
+from app.db.database import Base, get_engine
 
 from app.db.models import User
 
@@ -23,6 +26,10 @@ class VWorkout(BaseModel):
     workout_type_notes: str | None
     parent_workout_type_id: UUID | None
     workout_type_owner_user_id: UUID | None
+
+
+engine = get_engine()
+v_workouts = Table("v_workouts", Base.metadata, autoload_with=engine)
 
 
 def get_v_workout_by_workout_id(
@@ -75,45 +82,17 @@ def get_v_workouts_sorted(
     session: Session,
     order_by: str = "start_time",
     asc: bool = True,
-    limit: int = 10
+    limit: int = 10,
 ) -> list[VWorkout]:
-    raise NotImplementedError("This function is not yet implemented.")
-    ascending = "ASC" if asc else "DESC"
+    order_by_clause: str | UnaryExpression = order_by if asc else desc(order_by)
+    query = (
+        select(v_workouts)
+        .where(v_workouts.c.user_id == current_user.id)
+        .order_by(order_by_clause)
+        .limit(limit)
+    )
 
-    query = text(
-        """
-        SELECT
-            id,
-            start_time,
-            end_time,
-            status,
-            user_id,
-            created_at,
-            updated_at,
-            deleted_at,
-            workout_type_id,
-            workout_type_name,
-            workout_type_notes,
-            parent_workout_type_id,
-            workout_type_owner_user_id
-        FROM v_workouts
-        WHERE user_id = :user_id
-        ORDER BY :order_by :asc NULLS LAST
-        LIMIT :limit
-    """
-    ) #.bindparams(user_id=current_user.id, order_by=order_by, asc=ascending, limit=limit)
-    columns = [
-        'id', 'start_time', 'end_time', 'status', 'user_id', 'created_at', 'updated_at', 'deleted_at',
-        'workout_type_id', 'workout_type_name', 'workout_type_notes', 'parent_workout_type_id',
-        'workout_type_owner_user_id'
-    ]
-    table_columns = table('v_workouts').c[columns]
-    query = select(table_columns).where(text('user_id = :user_id').bindparams(user_id=current_user.id))
-    #).where(
-    #    text('user_id = :user_id').bindparams(user_id=current_user.id)
-    #)
-
-    result = session.execute(query).all()
+    result = session.execute(query)
 
     def record_as_workout(record):
         return VWorkout(

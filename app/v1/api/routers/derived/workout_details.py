@@ -4,7 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import sessionmaker, Session
 
 from app import db
-from app.db.views import get_v_workout_by_workout_id, get_v_workouts_sorted, get_v_exercises_by_workout_id
+from app.db.views import (
+    get_v_workout_by_workout_id,
+    get_v_workouts_sorted,
+    get_v_exercises_by_workout_id,
+)
 from app.v1.models.workout_details import WorkoutDetails
 from app.v1.auth import get_current_user
 
@@ -30,11 +34,15 @@ def read_workout_details(
                 workouts = [workout]
         else:
             workouts = get_v_workouts_sorted(
-                current_user=current_user, session=session, order_by="start_time", asc=False, limit=limit,
+                current_user=current_user,
+                session=session,
+                order_by="start_time",
+                asc=False,
+                limit=limit,
             )
     if len(workouts) == 0:
         raise HTTPException(status_code=404, detail="Workout not found")
-    
+
     wktDetails: list[WorkoutDetails] = []
     for workout in workouts:
         exercises = get_v_exercises_by_workout_id(
