@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Literal
 
 from sqlalchemy.orm import Session
-from sqlalchemy.sql import text
+from sqlalchemy.sql import text, select, column, table
 from pydantic import BaseModel
 
 from app.db.models import User
@@ -68,3 +68,68 @@ def get_v_workout_by_workout_id(
         parent_workout_type_id=result.parent_workout_type_id,
         workout_type_owner_user_id=result.workout_type_owner_user_id,
     )
+
+
+def get_v_workouts_sorted(
+    current_user: User,
+    session: Session,
+    order_by: str = "start_time",
+    asc: bool = True,
+    limit: int = 10
+) -> list[VWorkout]:
+    raise NotImplementedError("This function is not yet implemented.")
+    ascending = "ASC" if asc else "DESC"
+
+    query = text(
+        """
+        SELECT
+            id,
+            start_time,
+            end_time,
+            status,
+            user_id,
+            created_at,
+            updated_at,
+            deleted_at,
+            workout_type_id,
+            workout_type_name,
+            workout_type_notes,
+            parent_workout_type_id,
+            workout_type_owner_user_id
+        FROM v_workouts
+        WHERE user_id = :user_id
+        ORDER BY :order_by :asc NULLS LAST
+        LIMIT :limit
+    """
+    ) #.bindparams(user_id=current_user.id, order_by=order_by, asc=ascending, limit=limit)
+    columns = [
+        'id', 'start_time', 'end_time', 'status', 'user_id', 'created_at', 'updated_at', 'deleted_at',
+        'workout_type_id', 'workout_type_name', 'workout_type_notes', 'parent_workout_type_id',
+        'workout_type_owner_user_id'
+    ]
+    table_columns = table('v_workouts').c[columns]
+    query = select(table_columns).where(text('user_id = :user_id').bindparams(user_id=current_user.id))
+    #).where(
+    #    text('user_id = :user_id').bindparams(user_id=current_user.id)
+    #)
+
+    result = session.execute(query).all()
+
+    def record_as_workout(record):
+        return VWorkout(
+            id=record.id,
+            start_time=record.start_time,
+            end_time=record.end_time,
+            status=record.status,
+            user_id=record.user_id,
+            created_at=record.created_at,
+            updated_at=record.updated_at,
+            deleted_at=record.deleted_at,
+            workout_type_id=record.workout_type_id,
+            workout_type_name=record.workout_type_name,
+            workout_type_notes=record.workout_type_notes,
+            parent_workout_type_id=record.parent_workout_type_id,
+            workout_type_owner_user_id=record.workout_type_owner_user_id,
+        )
+
+    return [record_as_workout(record) for record in result]
