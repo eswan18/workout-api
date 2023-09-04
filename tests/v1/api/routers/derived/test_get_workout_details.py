@@ -115,7 +115,9 @@ def test_without_id_still_doesnt_let_user_read_others_workouts(
     primary_user_exercises: tuple[Exercise, ...],
 ):
     response = client.get(ROUTE, headers=secondary_test_user.auth)
-    assert response.status_code == 404
+    # We should receive a "successful" response but not get any data back, since we didn't ask for a specific workout.
+    assert response.status_code == 200
+    assert response.json() == []
 
 
 def test_without_id_returns_all_workout_details(

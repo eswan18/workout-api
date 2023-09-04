@@ -29,7 +29,8 @@ def read_workout_details(
                 current_user=current_user, workout_id=id, session=session
             )
             if workout is None:
-                workouts = []
+                # We should explicity give a 404 if the user asked for a specific workout.
+                raise HTTPException(status_code=404, detail="Workout not found")
             else:
                 workouts = [workout]
         else:
@@ -40,8 +41,6 @@ def read_workout_details(
                 asc=False,
                 limit=limit,
             )
-    if len(workouts) == 0:
-        raise HTTPException(status_code=404, detail="Workout not found")
 
     wktDetails: list[WorkoutDetails] = []
     for workout in workouts:
