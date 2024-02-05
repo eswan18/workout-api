@@ -6,7 +6,7 @@ create table profiles (
   avatar_url text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone,
-  delete_at timestamp with time zone,
+  deleted_at timestamp with time zone,
 
   constraint username_length check (char_length(username) >= 3)
 );
