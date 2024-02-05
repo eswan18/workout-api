@@ -1,11 +1,12 @@
 -- Create a table for public profiles
 create table profiles (
   id uuid references auth.users not null primary key,
-  updated_at timestamp with time zone,
   username text unique,
   full_name text,
   avatar_url text,
-  website text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone,
+  delete_at timestamp with time zone,
 
   constraint username_length check (char_length(username) >= 3)
 );
