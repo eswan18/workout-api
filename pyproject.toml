@@ -10,7 +10,7 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "3.11.4"
-fastapi = "^0.103.0"
+fastapi = "^0.109.1"
 uvicorn = {extras = ["standard"], version = "^0.23.2"}
 SQLAlchemy = "^2.0.20"
 alembic = "^1.11.3"
