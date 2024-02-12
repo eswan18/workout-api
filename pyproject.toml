@@ -16,7 +16,7 @@ SQLAlchemy = "^2.0.20"
 alembic = "^1.11.3"
 python-jose = "^3.3.0"
 passlib = "^1.7.4"
-python-multipart = "^0.0.6"
+python-multipart = "^0.0.7"
 bcrypt = "^4.0.1"
 certifi = "^2023.7.22"
 psycopg = {extras = ["binary"], version = "^3.1.10"}
